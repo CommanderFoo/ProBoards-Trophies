@@ -1,4 +1,4 @@
-div#trophy-notification {
+div.trophy-notification {
 
 	width: 260px;
 	padding: 10px;
@@ -22,7 +22,7 @@ div.trophy-notification-left {
 
 }
 
-div#trophy-notification-title {
+div.trophy-notification-title {
 
 	margin-top: 6px;
 	margin-left: 10px;
@@ -30,13 +30,13 @@ div#trophy-notification-title {
 
 }
 
-p#trophy-notification-info {
+p.trophy-notification-info {
 
 	margin-top: 0px;
 
 }
 
-img#trophy-notification-cup {
+img.trophy-notification-cup {
 
 	position: relative;
 	top: 4px;
