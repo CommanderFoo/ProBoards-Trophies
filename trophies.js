@@ -39,7 +39,12 @@ var trophies = {
 	init: function(){
 		this.setup();
 		this.queue = new yootil.queue();
+		this.parse_trophies();
 		this.show_undisplayed_trophies();
+		
+		if(yootil.location.check.profile()){
+			this.create_tab();
+		}
 	},
 		
 	setup: function(){
@@ -58,9 +63,26 @@ var trophies = {
 		this.plugin = proboards.plugin.get("pixeldepth_trophies");
 		
 		if(this.plugin && this.plugin.settings){
+			this.images = this.plugin.images;
+			
 			var settings = this.plugin.settings;
 			
 			
+			if(this.images.gold && yootil.user.logged_in()){
+				var link = "/user/" + yootil.user.id() + "/trophies";
+				
+				yootil.bar.add(link, this.images.gold, "Trophies", "pdtrophies");
+			}
+		}
+	},
+	
+	parse_trophies: function(){
+		for(var key in trophies.list){
+			var t = trophies.list[key];
+			
+			if(!t.disabled && typeof trophies.check[t.method] != "undefined"){
+				trophies.check[t.method](t);
+			}
 		}
 	},
 	
@@ -85,7 +107,7 @@ var trophies = {
 		this.queue.add(function(){
 			yootil.sound.play(self.sound_host + "trophy.mp3");
 			
-			$("div#trophy-" + trophy.id).fadeIn("normal").delay(4000).fadeOut("normal", function(){
+			$("div#trophy-" + trophy.id).delay(200).fadeIn("normal").delay(3500).fadeOut("normal", function(){
 				$(this).remove();
 				self.queue.next();
 			});
@@ -95,6 +117,18 @@ var trophies = {
 	show_undisplayed_trophies: function(){		
 		if(this.display_data.length){
 			
+		}
+	},
+	
+	create_tab: function(){
+		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
+		var form = $("div.show-user form.form_user_status");
+		
+		if(form.length){
+			container_parent = form.parent();
+		
+			yootil.create.profile_tab("Trophies", "trophies", active);
+			yootil.create.profile_content_box().html("Helllo").appendTo(container_parent);
 		}
 	}
 	
