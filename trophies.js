@@ -3,7 +3,7 @@ var trophies = {
 	VERSION: "1.0.0",
 	
 	data: {},
-	local: [],
+	local: {},
 	
 	earned_trophies: {},
 	
@@ -68,6 +68,15 @@ var trophies = {
 		}
 	},
 	
+	clear_trophies: function(){
+		this.data = {};
+		this.local = {};
+		this.earned_trophies = {};
+		
+		yootil.storage.set("pixeldepth_trophies", {}, true, true);
+		yootil.key.set("pixeldepth_trophies", {}, null, true);
+	},
+	
 	get_data: function(){
 		if(yootil.key.has_value("pixeldepth_trophies")){
 			var data = yootil.key.value("pixeldepth_trophies", null, true);
@@ -81,11 +90,13 @@ var trophies = {
 	},
 	
 	parse_trophies: function(){
-		for(var key in trophies.list){
-			var t = trophies.list[key];
-			
-			if(!t.disabled && typeof trophies.check[t.method] != "undefined"){
-				trophies.check[t.method].call(this, t);
+		if(yootil.user.logged_in()){
+			for(var key in trophies.list){
+				var t = trophies.list[key];
+				
+				if(!t.disabled && typeof trophies.check[t.method] != "undefined"){
+					trophies.check[t.method].call(this, t);
+				}
 			}
 		}
 	},
@@ -147,36 +158,52 @@ var trophies = {
 	
 	create_trophy_stats: function(){
 		var html = "";
-		
+		var trophy_stats = this.get_next_level();
+		console.log(trophy_stats);
 		html += "<div>";
-		html += "<div style='float: left; margin-right: 10px'><img src='" + this.images.trophy + "' /></div>";
-		html += "<div style='float: left; margin-right: 10px; font-weight: 16px;'>2</div>";
+		html += "<div style='float: left; margin-right: 20px'><img src='" + this.images.trophy_level + "' /></div>";
+		html += "<div style='float: left; margin-right: 20px; font-weight: 16px; text-align: center;'><strong>Level</strong><br /><strong style='font-size: 40px;'>" + trophy_stats.level + "</strong></div>";
+		html += "<div style='float: left;'><div style='margin-top: 25px; border: 1px solid black; padding: 1px; height: 15px; width: 400px'><div style='background-color: #D6A314; width: " + trophy_stats.percent + "%; height: 15px'> </div></div></div>";
+		html += "<div style='float: right'>AAA</div>";
+		html += "<div style='float: right'>BBB</div>";
 		html += "</div>";		
 		
 		return html;
 	},
 	
-	get_trophies: function(){
-		return this.earned_trophies;
+	get_trophies: function(ary){
+		if(ary){
+			var trophies = [];
+			
+			for(var key in this.data){
+				if(!trophies.list[key].disabled){
+					trophies.push(this.data[key]);
+				}
+			}
+			
+			return trophies;
+		}
+		
+		return this.data;
 	},
 	
 	get_points: function(t){
 		var points = 0;
 
-		for(var index in t){
-			if(trophies.list[t[index].id] && trophies.list[t[index].id].active){
-				switch(trophies.list[t[index].id].cup){
+		for(var id in t){
+			if(trophies.list[id] && !trophies.list[id].disabled){
+				switch(trophies.list[id].cup){
 	
 					case "bronze" :
-						points += 15;
-						break;
-	
-					case "silver" :
 						points += 30;
 						break;
 	
+					case "silver" :
+						points += 60;
+						break;
+	
 					case "gold" :
-						points += 90;
+						points += 120;
 						break;	
 				}
 			}
@@ -196,26 +223,25 @@ var trophies = {
 			}
 		}
 
-		return lev;
+		return parseInt(lev);
 	},
 	
 	get_next_level: function(){
-		var points = this.points(this.get_trophies());
-		var current_level = trophies.levels[this.get_level(points)];
-		var next_level = trophies.levels[(parseInt(current_level) + 1).toString()];
-		var points_needed = (next_level - points);
+		var points = this.get_points(this.get_trophies());
+		var level = this.get_level(points);
+		var next_level_points = trophies.levels[(level + 1).toString()];
+		var points_needed = (next_level_points - points);
 		var obj = {
 
 			percent: 0,
 			needed: points_needed,
 			total: points,
-			next_level: next_level,
-			current_level: current_level
+			level: level
 
 		};
 
-		if(next_level){
-			obj.percent = ((points / next_level) * 100).toFixed(0);
+		if(next_level_points){
+			obj.percent = ((points / next_level_points) * 100).toFixed(0);
 		}
 
 		if(obj.percent > 100){
@@ -233,9 +259,15 @@ var trophies = {
 		return false;
 	},
 	
-	save_local: function(id){
-		this.local.push(id);
-		yootil.storage.set("pixeldepth_trophies", this.local, true, true);
+	save_local: function(trophy_id){
+		if(this.local[trophy_id]){
+			this.local[trophy_id] = {
+				id: trophy_id,
+				s: 0
+			};
+			
+			yootil.storage.set("pixeldepth_trophies", this.local, true, true);
+		}
 	},
 	
 	save_trophy: function(trophy, local){
