@@ -42,3 +42,175 @@ img.trophy-notification-cup {
 	top: 4px;
 
 }
+
+div.trophy-stats-wrapper div.trophy-stats-big-cup {
+
+	float: left;
+	margin-right: 20px;
+	
+}
+
+div.trophy-stats-wrapper div.trophy-stats-level-wrapper {
+
+	float: left;
+	margin-right: 20px;
+	font-weight: 16px;
+	text-align: center;
+	
+}
+
+div.trophy-stats-wrapper strong.trophy-stats-level {
+	
+	font-size: 40px;
+
+}
+
+div.trophy-stats-wrapper div.trophy-stats-percent-wrapper {
+	
+	float: left;
+	
+}
+
+div.trophy-stats-wrapper div.trophy-stats-percent-bar-wrapper {
+	
+	margin-top: 25px;
+	border: 1px solid black;
+	padding: 1px;
+	height: 15px;
+	width: 400px
+
+}
+
+div.trophy-stats-wrapper div.trophy-stats-percent-bar {
+
+	background-color: #D6A314;
+	height: 15px;
+	
+}
+
+div.trophy-stats-wrapper div.trophy-stats-total-cups-wrapper {
+	
+	float: right;
+		
+}
+
+div.trophy-stats-wrapper div.trophy-stats-total-cups-wrapper ul {
+	
+	width: 55px;
+	
+}
+
+div.trophy-stats-wrapper div.trophy-stats-total-trophies-wrapper {
+	
+	float: right;
+	margin-right: 35px;
+	font-weight: 16px;
+	text-align: center;
+	
+}
+
+div.trophy-stats-wrapper strong.trophy-stats-total-trophies {
+
+	font-size: 40px;
+	
+}
+
+div.trophy-stats-wrapper li.trophy-stats-cup-bronze-img, div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-img, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total, div.trophy-stats-wrapper li.trophy-stats-cup-gold-img, div.trophy-stats-wrapper li.trophy-stats-cup-gold-total {
+
+	float: left;
+
+}
+
+div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total, div.trophy-stats-wrapper li.trophy-stats-cup-gold-total {
+
+	margin-left: 5px;
+	
+}
+
+div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total {
+
+	margin-bottom: 6px;
+}
+
+div.trophy-stats-wrapper li.trophy-stats-cup-spacer {
+
+	clear: both;
+	
+}
+
+div.trophies-list-none {
+
+	font-style: italic;
+	padding: 10px;
+	
+}
+
+div.trophy-list-trophy-img, div.trophy-list-trophy-title-desc {
+
+	float: left;
+	
+}
+
+div.trophy-list-trophy-big-cup, div.trophy-list-trophy-earned-date {
+
+	float: right;
+	
+}
+
+div.trophy-list-trophy {
+
+	padding: 5px;
+	margin-top: 10px;
+
+}
+
+div.trophy-list-trophy.trophy-list-trophy-first {
+	
+	margin-top: 0px;
+	
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-title-desc {
+
+	margin-left: 15px;
+	margin-top: 3px;	
+
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-desc, div.trophy-list-trophy-earned-date {
+	
+	font-size: 92%;
+	
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-title-desc span.trophy-list-trophy-title-cup {
+	
+	position: relative;
+	top: 2px;
+
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-title-desc div.trophy-list-trophy-title {
+
+	margin-bottom: 3px;
+	
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-big-cup {
+
+	margin-right: 17px;
+
+}
+
+div.trophy-list-trophy div.trophy-list-trophy-earned-date {
+
+	margin-top: 15px;
+	margin-right: 30px;
+	
+}
+
+div.trophy-list-trophy-not-earned {
+
+	opacity: 0.3;	
+
+}
