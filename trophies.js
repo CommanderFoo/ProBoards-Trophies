@@ -1,19 +1,80 @@
+/**
+ * @class Trophies
+ * @static
+ *
+ * Main class.
+ */
+
 var trophies = {
+
+	/**
+	 * Holds the latest version of this plugin.
+	 * @property {String} VERSION
+	 */
 
 	VERSION: "{VER}",
 
+	/**
+	 * This is the ProBoards plugin key we are using.
+	 * @property {String} KEY
+	 */
+
 	KEY: "pixeldepth_trophies",
+
+	/**
+	 * This is the min required Yootil version that is needed.
+	 * @property {String} required_yootil_version
+	 */
+
+	required_yootil_version: "1.0.0",
+
+	/**
+	 * This holds a reference to the plugin object returned by ProBoards.
+	 * @property {Object} plugin
+	 */
+
+	plugin: null,
+
+	/**
+	 * Route gets cached here, as it gets wrote over by some AJAX responses.
+	 * We shouldn't need it, as Yootil does caching as well.
+	 *
+	 * @property {String} route
+	 */
+
+	route: null,
+
+	/**
+	 * @property {Object} params Reference to ProBoards page params.
+	 */
+
+	params: null,
+
+	/**
+	 * @property {Object} images Reference to the images object from ProBoards for this plugin.
+	 */
+
+	images: null,
+
+	/**
+	 * @property {Object} user_data_table A lookup table for user data objects on the page, always check here first before making a new Data instance.
+	 */
+
+	user_data_table: {},
+
+	/**
+	 * @propety {Boolean} showing Used when the notification is showing.
+	 */
 
 	showing: false,
 
-	plugin: null,
-	route: null,
-	params: null,
-	images: null,
-
-	trigger_caller: false,
-
-	user_data_table: {},
+	/**
+	 * @property {Object} settings Default settings which can be overwritten from setup.
+	 * @property {Boolean} settings.notification_disable
+	 * @property {Boolean} settings.show_on_profile
+	 * @property {Boolean} settings.show_in_mini_profile
+	 * @property {Boolean} settings.show_on_members_list
+	 */
 
 	settings: {
 
@@ -21,30 +82,89 @@ var trophies = {
 
 		show_on_profile: true,
 		show_in_mini_profile: true,
-		show_on_members_list: true
+		show_on_members_list: false,
+
+		show_id: false
 
 	},
-	
+
+	/**
+	 * @property {Array} banned_members Members who are banned from earning trophies.
+	 */
+
 	banned_members: [],
+
+	/**
+	 * @property {Array} banned_groups Groups who are banned from earning trophies.
+	 */
+
 	banned_groups: [],
 
-	modules: [],
+	/**
+	 * @property {Array} months An array of months used throughout the plugin and it's modules.
+	 */
 
 	months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"],
+
+	/**
+	 * @property {Array} days An array of days used throughout the plugin and it's modules.
+	 */
+
 	days: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
-	
+
+	/**
+	 * @property {Object} queue Yootil queue instance.
+	 */
+
 	queue: null,
-	
+
+	list: {},
+
+	/**
+	 * Starts the magic.
+	 * Various this happening here.  We do Yootil checks, setup user lookup table, and other things.
+	 */
+
 	init: function(){
+		if(!this.check_yootil()){
+			return;
+		}
+
 		this.queue = new yootil.queue();
+
 		this.setup();
+		this.register_core_trophies();
+		this.register_3rd_party_trophies();
+		this.set_disabled_trophies();
 		this.setup_user_data_table();
+
 		this.init_trophy_checks();
 				
-		if(yootil.location.check.profile()){
+		if(yootil.location.profile()){
 			this.create_tab();
 		}
+
+		var posting = (yootil.location.thread() || yootil.location.editing() || yootil.location.posting());
+		var messaging = (yootil.location.conversation_new() || yootil.location.messaging());
+
+		if(posting || messaging){
+			var the_form;
+
+			if(posting){
+				the_form = yootil.form.any_posting();
+			} else{
+				the_form = yootil.form.any_messaging();
+			}
+
+			if(the_form.length == 1){
+				this.bind_form_submit(the_form);
+			}
+		}
 	},
+
+	/**
+	 * Handles overwriting default values.  These come from the plugin settings.
+	 */
 
 	setup: function(){
 		this.route = (proboards.data("route") && proboards.data("route").name)? proboards.data("route").name.toLowerCase() : "";
@@ -64,13 +184,76 @@ var trophies = {
 			
 			this.banned_members = settings.banned_members;
 			this.banned_groups = settings.banned_groups;
+
+			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
+			this.settings.show_on_profile = (!! ~~ settings.show_on_profile)? true : false;
+			this.settings.show_on_members_list = (!! ~~ settings.show_on_members_list)? true : false;
+			this.settings.show_id = (!! ~~ settings.show_id)? true : false;
 		}
 	},
-	
+
+	register_core_trophies: function(){
+		if(typeof this.core_trophies != "undefined"){
+			this.core_trophies.init();
+		}
+	},
+
+	register_3rd_party_trophies: function(){
+		if(typeof TROPHY_REGISTER != "undefined"){
+			console.log(TROPHY_REGISTER);
+		}
+	},
+
+	set_disabled_trophies: function(){
+
+	},
+
+	register_trophy: function(trophy){
+		if(typeof trophy == "undefined" || typeof trophy.id == "undefined" || this.list[trophy.id]){
+			return;
+		}
+
+		this.list[trophy.id] = trophy;
+	},
+
+	/**
+	 * Binds a submit handler to the posting and messaging forms for moving local data to the key.
+	 *
+	 * @param {Object} the_form The form getting the handler.
+	 */
+
+	bind_form_submit: function(the_form){
+		the_form.bind("submit", $.proxy(this.move_to_key, this));
+	},
+
+	/**
+	 * We need to move local trophy data that has been seen to the key.
+	 */
+
+	move_to_key: function(){
+		this.data(yootil.user.id()).clear.synced();
+		yootil.key.set(this.KEY, this.data(yootil.user.id()).get.data(), yootil.user.id());
+	},
+
+	/**
+	 * Gets current version of the plugin.
+	 *
+	 * @return {String}
+	 */
+
 	version: function(){
 		return this.VERSION;
 	},
-	
+
+	/**
+	 * Checks a number and returns the correct suffix to be used with it.
+	 *
+	 *     trophies.get_suffix(3); // "rd"
+	 *
+	 * @param {Number} n The number to be checked.
+	 * @return {String}
+	 */
+
 	get_suffix: function(n){
 		var j = (n % 10);
 
@@ -88,7 +271,13 @@ var trophies = {
 
 		return "th";
 	},
-	
+
+	/**
+	 * Checks to see if the user is allowed to earn trophies.
+	 *
+	 * @returns {Boolean}
+	 */
+
 	allowed_to_earn_trophies: function(){
 		if(!yootil.user.logged_in()){
 			return false;	
@@ -113,6 +302,14 @@ var trophies = {
 		return true;
 	},
 
+	/**
+	 * Checks the data type to make sure it's correct.  The reason for this is because ProBoards
+	 * never used to JSON stringify values, so we check to make sure it's not double stringified.
+	 *
+	 * @param {String} data The key data.
+	 * @return {Object}
+	 */
+
 	check_data: function(data){
 		if(typeof data == "string" && yootil.is_json(data)){
 			data = JSON.parse(data);
@@ -120,7 +317,14 @@ var trophies = {
 
 		return data;
 	},
-	
+
+	/**
+	 * This sets up the lookup table for all users on the current page.  Each entry is an instance of Data.  Always
+	 * look here before creating your own instance, as multiple instances would not be good.
+	 *
+	 *  It is recommended that if you do create an instance of Data to update the lookup table (key being user id).
+	 */
+
 	setup_user_data_table: function(){
 		var all_data = proboards.plugin.keys.data[this.KEY];
 		var got_data = false;
@@ -148,6 +352,14 @@ var trophies = {
 		this.show_unseen_trophies();
 	},
 
+	/**
+	 * This is used to get the instance of the users Data class from the lookup table.  Please see the Data
+	 * class to see methods available.
+	 *
+	 * @param {Number} user_id The user id of the users data you want.
+	 * @return {Object}
+	 */
+
 	data: function(user_id){
 		var user_data = this.user_data_table[((user_id)? user_id : yootil.user.id())];
 
@@ -158,28 +370,51 @@ var trophies = {
 
 		return user_data;
 	},
+
+	/**
+	 * Refresh the user data lookup table.
+	 */
 	
 	refresh_user_data_table: function(){
 		this.setup_user_data_table();
 	},
+
+	/**
+	 * Each trophy has it's own method to be called.  Here we call those methods.
+	 */
 
 	init_trophy_checks: function(){
 		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
 			for(var key in this.list){
 				var t = this.list[key];
 	
-				if(!t.disabled && typeof this.check[t.method] != "undefined"){
-					this.check[t.method].call(this, t);
+				if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id).trophy.earned(t)){
+					t.callback.call(this, t);
 				}
 			}
 		}
 	},
 
+	fetch_image: function(trophy){
+		if(trophy.image.match(/^http:/i)){
+			return trophy.image;
+		}
+
+		return this.images[trophy.image];
+	},
+
+	/**
+	 * Creates the trophy notification html.
+	 *
+	 * @param {Object} trophy The trophy data to be shown to the user.
+	 * @returns {String}
+	 */
+
 	create_notification: function(trophy){
 		var notification = "";
 
 		notification += "<div id='trophy-" + trophy.id + "' class='trophy-notification' style='display: none;'>";
-		notification += "<div class='trophy-notification-left'><img class='trophy-notification-img' src='" + this.images[trophy.image] + "' /></div>";
+		notification += "<div class='trophy-notification-left'><img class='trophy-notification-img' src='" + trophies.fetch_image(trophy) + "' /></div>";
 		notification += "<div class='trophy-notification-title' class='trophy-notification-left'>You have earned a trophy.";
 		notification += "<p class='trophy-notification-info'><img class='trophy-notification-cup' src='" + this.images[trophy.cup] + "' /> ";
 		notification += "<span class='trophy-notification-txt'>" + trophy.title + "</span></p></div></div>";
@@ -190,10 +425,10 @@ var trophies = {
 	},
 
 	show_notification: function(trophy){
-		if(!this.allowed_to_earn_trophies() || this.data(yootil.user.id()).has.seen(trophy)){
+		if(!this.allowed_to_earn_trophies() || this.data(yootil.user.id()).trophy.seen(trophy)){
 			return;	
 		}
-		
+
 		this.data(yootil.user.id()).set.local.trophy(trophy);
 		
 		var notification = this.create_notification(trophy);
@@ -210,29 +445,58 @@ var trophies = {
 	},
 	
 	show_unseen_trophies: function(){
-		var trophies = this.data(yootil.user.id()).get.data();
-		
+		var trophies = this.data(yootil.user.id()).get.local_data();
+
+		trophies = this.sort_unseen_trophies(trophies);
+
 		for(var t in trophies){
-			if(!trophies[t].s){
-				this.show_notification(this.list[t]);
+			if(!trophies[t].value.s){
+				this.show_notification(this.list[trophies[t].key]);
 			} 	
 		}
+	},
+
+	sort_unseen_trophies: function(trophies){
+		var sorted_trophies = [];
+
+		for(var t in trophies){
+			sorted_trophies.push({key: t, value: trophies[t]})
+		}
+
+		sorted_trophies.sort(function(a, b){
+			return a.key - b.key;
+		});
+
+		return sorted_trophies;
 	},
 	
 	create_tab: function(){
 		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
-		var form = $("div.show-user form.form_user_status");
+		var first_box = $("form.form_user_status .content-box:first");
 
-		if(form.length){
+		if(first_box.length){
 			var trophy_stats = yootil.create.profile_content_box();
 			var trophy_list = yootil.create.profile_content_box();
-			var stats_html = this.create_trophy_stats();
+			var stats_html = (this.settings.show_on_profile)? this.create_trophy_stats() : "";
 
-			container_parent = form.parent();
+			if(stats_html.length){
+				trophy_stats.html(stats_html);
+			}
+
+			if(!active){
+				if(this.settings.show_on_profile){
+					if(yootil.user.id() == yootil.page.member.id()){
+						trophy_stats.insertAfter(first_box);
+					} else{
+						trophy_stats.insertBefore(first_box);
+					}
+				}
+			} else {
+				trophy_stats.appendTo($("form.form_user_status").parent());
+				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
+			}
+
 			yootil.create.profile_tab("Trophies", "trophies", active);
-
-			trophy_stats.html(stats_html).appendTo(container_parent);
-			trophy_list.html(this.build_trophy_list()).appendTo(container_parent);
 		}
 	},
 	
@@ -240,7 +504,8 @@ var trophies = {
 		var trophy_list = "";
 		var counter = 0;
 		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
-		
+		var the_user = yootil.page.member.id() || yootil.user.id();
+
 		for(var id in this.list){
 			var trophy = this.list[id];
 			
@@ -248,10 +513,10 @@ var trophies = {
 				continue;	
 			}
 			
-			var has_earned = (yootil.user.logged_in() && this.data(yootil.user.id()).trophy.earned(trophy))? true : false;
+			var has_earned = (yootil.user.logged_in() && this.data(the_user).trophy.earned(trophy))? true : false;
 			var cup_big = this.images.bronze_big;
 			var cup_small = this.images.bronze;
-			var trophy_img = this.images[((has_earned)? trophy.image : "locked")]; 
+			var trophy_img = (has_earned)? this.fetch_image(trophy) : this.images["locked"];
 			var alt = "Bronze";
 			var first = (!counter)? " trophy-list-trophy-first" : "";
 			var opacity = (has_earned)? "" : " trophy-list-trophy-not-earned";
@@ -275,7 +540,7 @@ var trophies = {
 			}
 			
 			var date_str = "";
-			var the_trophy = this.data(yootil.page.member.id()).get.trophy(id);
+			var the_trophy = this.data(the_user).get.trophy(id);
 			
 			if(the_trophy && the_trophy.t && has_earned){
 				var date = new Date(the_trophy.t);
@@ -300,9 +565,15 @@ var trophies = {
 			
 			var big_cup_img = "<img src='" + yootil.html_encode(cup_big) + "' title='" + alt + "' alt='" + alt + "' />";
 			var small_cup_img = "<img src='" + yootil.html_encode(cup_small) + "' title='" + alt + "' alt='" + alt + "' />";
-			
+
+			var title = "";
+
+			if(this.settings.show_id){
+				title = "title='Trophy ID: " + id + "' ";
+			}
+
 			trophy_list += "<div class='trophy-list-trophy" + first + opacity + "'>";
-			trophy_list += "<div class='trophy-list-trophy-img'><img src='" + yootil.html_encode(trophy_img) + "' /></div>";
+			trophy_list += "<div class='trophy-list-trophy-img'><img " + title + "src='" + trophy_img + "' /></div>";
 			trophy_list += "<div class='trophy-list-trophy-title-desc'>";
 			trophy_list += "<div class='trophy-list-trophy-title'><span class='trophy-list-trophy-title-cup'>" + small_cup_img + "</span> <strong>" + yootil.html_encode(trophy.title) + "</strong></div>";
 			trophy_list += "<div class='trophy-list-trophy-desc'>" + yootil.html_encode(trophy.description) + ".</div></div>";
@@ -344,6 +615,58 @@ var trophies = {
 		html += "</div>";
 
 		return html;
+	},
+
+	/**
+	 * Yootil is needed, so we check for it, and also check that we are using the needed version.
+	 *
+	 * @return {Boolean}
+	 */
+
+	check_yootil: function(){
+		if(proboards.data && proboards.data("user") && proboards.data("user").id == 1){
+			var body = "";
+			var title = "";
+
+			if(typeof yootil == "undefined"){
+				title = "<div class=\"title-bar\"><h2>Trophies - Yootil Not Found</h2></div>";
+				body = "<p>You do not have the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin installed.</p>";
+				body += "<p>Without the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin, the Trophies plugin will not work.</p>";
+			} else {
+				var versions = yootil.convert_versions(yootil.version(), this.required_yootil_version);
+
+				if(versions[0] < versions[1]){
+					title = "<div class=\"title-bar\"><h2>Trophies - Yootil Needs Updating</h2></div>";
+					body += "<p>The Trophies plugin requires at least " + yootil.html_encode(this.required_yootil_version) + " of the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin.</p>";
+				}
+			}
+
+			if(title.length){
+				var msg = "<div class='trophiy-notification-content'>";
+
+				msg += body;
+				msg += "</div>";
+
+				var notification = "<div class=\"container trophy-yootil-notification\">";
+
+				notification += title;
+				notification += "<div class=\"content pad-all\">" + msg + "</div></div>";
+
+				$("div#content").prepend(notification);
+
+				return false;
+			}
+		}
+
+		return true;
+	},
+
+	exist: function(id){
+		if(!this.list[id]){
+			return false
+		}
+
+		return true;
 	}
 
 };
