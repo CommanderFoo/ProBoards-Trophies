@@ -10,7 +10,7 @@ trophies.core_trophies = (function(){
 				cup: "bronze",
 				title: "Logged In",
 				image: "logged_in",
-				description: "You are logged in to your account",
+				description: "You have logged in to your account",
 				disabled: false,
 				callback: function(trophy){
 					this.show_notification(trophy, false, false);

@@ -120,6 +120,8 @@ var trophies = {
 
 	list: {},
 
+	packs: [],
+
 	/**
 	 * Starts the magic.
 	 * Various this happening here.  We do Yootil checks, setup user lookup table, and other things.
@@ -200,7 +202,18 @@ var trophies = {
 
 	register_3rd_party_trophies: function(){
 		if(typeof TROPHY_REGISTER != "undefined"){
-			console.log(TROPHY_REGISTER);
+			for(var p in TROPHY_REGISTER){
+				var the_pack = p;
+
+				this.packs.push(the_pack);
+
+				for(var t in TROPHY_REGISTER[the_pack]){
+					var the_trophy = TROPHY_REGISTER[the_pack][t];
+					the_trophy.pack = the_pack;
+
+					this.register_trophy(the_trophy);
+				}
+			}
 		}
 	},
 
@@ -232,7 +245,7 @@ var trophies = {
 
 	move_to_key: function(){
 		this.data(yootil.user.id()).clear.synced();
-		yootil.key.set(this.KEY, this.data(yootil.user.id()).get.data(), yootil.user.id());
+		this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
 	},
 
 	/**
@@ -326,12 +339,12 @@ var trophies = {
 	 */
 
 	setup_user_data_table: function(){
-		var all_data = proboards.plugin.keys.data[this.KEY];
+		var core_data = proboards.plugin.keys.data[this.KEY];
 		var got_data = false;
 		var local_data = yootil.storage.get("pixeldepth_trophies", true) || {};
 		
-		for(var key in all_data){
-			var data = this.check_data(all_data[key]);
+		for(var key in core_data){
+			var data = this.check_data(core_data[key]);
 			var local = {};
 			
 			if(yootil.user.logged_in() && key == yootil.user.id()){
@@ -341,12 +354,34 @@ var trophies = {
 			if(key == yootil.user.id()){
 				got_data = true;	
 			}
-					
-			this.user_data_table[key] = new this.Data(key, data, local);
+
+			this.user_data_table[key] = {
+
+				data_core: data,
+				data_local: local,
+				data_pack: {}
+
+			};
 		}
-		
+
+		if(this.packs.length){
+			for(var p in this.packs){
+				var pack_data = proboards.plugin.keys.data["trophy_" + this.packs[p] + "_pack"];
+
+				for(var user in pack_data){
+					var user_data = this.check_data(pack_data[user]);
+
+					this.user_data_table[user].data_pack[this.packs[p]] = user_data;
+				}
+			}
+		}
+
+		for(var u in this.user_data_table){
+			this.user_data_table[u] = new this.Data(u, this.user_data_table[u], local);
+		}
+
 		if(!got_data && yootil.user.logged_in()){
-			this.user_data_table[yootil.user.id()] = new this.Data(yootil.user.id(), data, local_data);
+			this.user_data_table[yootil.user.id()] = new this.Data(yootil.user.id(), {}, {});
 		}
 		
 		this.show_unseen_trophies();
@@ -364,7 +399,7 @@ var trophies = {
 		var user_data = this.user_data_table[((user_id)? user_id : yootil.user.id())];
 
 		if(!user_data){
-			user_data = new this.Data(user_id);
+			user_data = new this.Data(user_id, {}, {});
 			this.user_data_table[user_id] = user_data;
 		}
 
@@ -388,7 +423,7 @@ var trophies = {
 			for(var key in this.list){
 				var t = this.list[key];
 	
-				if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id).trophy.earned(t)){
+				if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(t)){
 					t.callback.call(this, t);
 				}
 			}
@@ -396,8 +431,14 @@ var trophies = {
 	},
 
 	fetch_image: function(trophy){
-		if(trophy.image.match(/^http:/i)){
-			return trophy.image;
+		if(typeof trophy.pack != "undefined" && trophy.pack != "core"){
+			var plugin = proboards.plugin.get("trophy_" + trophy.pack + "_pack");
+
+			if(plugin && plugin.images && plugin.images[trophy.image]){
+				return plugin.images[trophy.image];
+			} else {
+				return this.images.missing;
+			}
 		}
 
 		return this.images[trophy.image];
@@ -445,18 +486,21 @@ var trophies = {
 	},
 	
 	show_unseen_trophies: function(){
-		var trophies = this.data(yootil.user.id()).get.local_data();
+		var unseen_trophies = this.data(yootil.user.id()).get.local_data();
 
-		trophies = this.sort_unseen_trophies(trophies);
+		//trophies = this.sort_unseen_trophies(trophies);
 
-		for(var t in trophies){
-			if(!trophies[t].value.s){
-				this.show_notification(this.list[trophies[t].key]);
-			} 	
+		for(var t in unseen_trophies){
+			if(!this.exist(t)){
+				this.data(yootil.user.id()).remove.trophy(t, true);
+
+			} else if(!unseen_trophies[t].s){
+				this.show_notification(this.list[t]);
+			}
 		}
 	},
 
-	sort_unseen_trophies: function(trophies){
+	/*sort_unseen_trophies: function(trophies){
 		var sorted_trophies = [];
 
 		for(var t in trophies){
@@ -468,7 +512,7 @@ var trophies = {
 		});
 
 		return sorted_trophies;
-	},
+	},*/
 	
 	create_tab: function(){
 		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;

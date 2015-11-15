@@ -14,7 +14,7 @@
 
 trophies.Data = (function(){
 
-	function Data(user_id, data, local_data){
+	function Data(user_id, the_data, local_data){
 
 		/**
 		 * @property {Number} user_id The user id for this user.
@@ -26,7 +26,12 @@ trophies.Data = (function(){
 		 * @property {Object} data Data object for the user.
 		 */
 
-		this.data = data || {};
+		this.data = {
+
+			d: {},
+			t: {}
+
+		};
 
 		/**
 		 * @property {Object} local Local data object for the user.
@@ -81,12 +86,12 @@ trophies.Data = (function(){
 		 * @param {Object} callbacks Yootil key options that get passed on to the set method.
 		 */
 
-		this.update = function(skip_update, callbacks){
+		this.update = function(skip_update, key, data, callbacks){
 			if(!skip_update){
 
 				// Lets put in a length check on the data
 
-				if(!yootil.key.has_space(trophies.KEY)){
+				if(!yootil.key.has_space(key)){
 					this.error = "Data length has gone over it's limit of " + yootil.forum.plugin_max_key_length();
 
 					pb.window.dialog("data_limit", {
@@ -97,7 +102,7 @@ trophies.Data = (function(){
 						width: 350,
 						resizable: false,
 						draggable: false,
-						html: "Unfortunately we can not save anymore data in the key.<br /><br />Plugin: Trophies",
+						html: "Unfortunately we can not save anymore data in the key.<br /><br />Plugin: Trophies - [" + key + "]",
 
 						buttons: {
 
@@ -112,11 +117,57 @@ trophies.Data = (function(){
 					return;
 				}
 
-				yootil.key.set(trophies.KEY, this.data, this.user_id, callbacks);
+				yootil.key.set(key, data, this.user_id, callbacks);
 			}
 		};
 
 		var self = this;
+
+		this.save_to_keys = function(core, packs){
+
+			// Handle core first
+
+			var core_data = {};
+
+			for(var core_trophy in self.data.t){
+				if(this.data.t[core_trophy].p == "core"){
+					core_data[core_trophy] = {
+
+						t: self.data.t[core_trophy].t
+
+					};
+				}
+			}
+
+			core_data.d = self.data.d;
+
+			self.update(false, core, core_data);
+
+			// Now packs
+
+			var pack_data = {};
+
+			for(var p in packs){
+				if(typeof pack_data[packs[p]] == "undefined"){
+					pack_data[packs[p]] = {};
+				}
+
+				for(var trophy in this.data){
+					if(this.data[trophy].p == packs[p]){
+						pack_data[packs[p]][trophy] = {
+							t: this.data[trophy].t
+						};
+					}
+				}
+			}
+
+			for(var pack in pack_data){
+				var the_pack_data = pack_data[pack];
+
+				pack_data
+				this.update(false, "trophy_" + pack + "_pack", the_pack_data);
+			}
+		};
 
 		/**
 		 * @class trophies.Data.get
@@ -224,13 +275,19 @@ trophies.Data = (function(){
 
 		this.remove = {
 
-			trophy: function(id){
+			// Do we need to update local storage right away??
+
+			trophy: function(id, update_local){
 				if(self.data[id]){
 					delete self.data[id];
+				}
 
-					if(self.local[id]){
-						delete self.local[id];
-					}
+				if(self.local[id]){
+					delete self.local[id];
+				}
+
+				if(update_local){
+					yootil.storage.set("pixeldepth_trophies", self.local, true, true);
 				}
 			}
 
@@ -240,7 +297,6 @@ trophies.Data = (function(){
 
 			data: function(data, skip_update, opts, sync){
 				self.data = data;
-				self.update(skip_update, opts, sync);
 			},
 			
 			local_data: function(data){
@@ -250,7 +306,8 @@ trophies.Data = (function(){
 					if(trophies.exist(id)){
 						self.data[id] = {
 
-							t: data[id].t
+							t: data[id].t,
+							p: data[id].p
 
 						};
 					}
@@ -258,12 +315,15 @@ trophies.Data = (function(){
 			},
 			
 			local: {
-				
+
+				// Consider pushing trophy to the data tables??
+
 				trophy: function(trophy){
 					self.local[trophy.id] = {
 							
 						t: (+ new Date()),
-						s: 0
+						s: 0,
+						p: (trophy.pack)? trophy.pack : "core"
 							
 					};
 						
@@ -291,11 +351,6 @@ trophies.Data = (function(){
 		};
 
 		this.clear = {
-
-			data: function(skip_update, opts, sync){
-				self.data = {};
-				self.update(skip_update, opts, sync);
-			},
 
 			local: function(){
 				self.local = {};
@@ -339,6 +394,39 @@ trophies.Data = (function(){
 		if(local_data && local_data.constructor == Object){
 			this.set.local_data(local_data);
 		}
+
+		// Populate the data object by merging core and packs together.
+
+		if(the_data && the_data.data_core){
+			for(var t in the_data.data_core){
+				this.data[t] = {
+
+					t: the_data.data_core[t].t,
+					p: "core"
+
+				}
+			}
+		}
+
+		// Now handle packs
+
+		if(the_data && the_data.data_pack){
+			for(var p in the_data.data_pack){
+				for(var t in the_data.data_pack[p]){
+					this.data[t] = {
+
+						t: the_data.data_pack[p][t].t,
+						p: p
+
+					};
+				}
+			}
+		}
+
+		/*console.log("----")
+		console.log(user_id);
+		console.log(this.data);
+		console.log("----")*/
 
 		if(this.data && this.data.constructor == Object){
 			for(var id in this.data){
