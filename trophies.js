@@ -135,11 +135,10 @@ var trophies = {
 		this.queue = new yootil.queue();
 
 		this.setup();
-		this.register_core_trophies();
-		this.register_3rd_party_trophies();
-		this.set_disabled_trophies();
+		this.register_trophy_pack();
 		this.setup_user_data_table();
 
+		/*
 		this.init_trophy_checks();
 				
 		if(yootil.location.profile()){
@@ -161,7 +160,7 @@ var trophies = {
 			if(the_form.length == 1){
 				this.bind_form_submit(the_form);
 			}
-		}
+		}*/
 	},
 
 	/**
@@ -194,31 +193,22 @@ var trophies = {
 		}
 	},
 
-	register_core_trophies: function(){
-		if(typeof this.core_trophies != "undefined"){
-			this.core_trophies.init();
-		}
-	},
-
-	register_3rd_party_trophies: function(){
+	register_trophy_pack: function(){
 		if(typeof TROPHY_REGISTER != "undefined"){
 			for(var p in TROPHY_REGISTER){
 				var the_pack = p;
 
-				this.packs.push(the_pack);
+				if(typeof TROPHY_REGISTER[the_pack].trophies != "undefined" && TROPHY_REGISTER[the_pack].trophies.constructor == Array && TROPHY_REGISTER[the_pack].trophies.length){
+					this.packs.push(the_pack);
 
-				for(var t in TROPHY_REGISTER[the_pack]){
-					var the_trophy = TROPHY_REGISTER[the_pack][t];
-					the_trophy.pack = the_pack;
-
-					this.register_trophy(the_trophy);
+					for(var t in TROPHY_REGISTER[the_pack].trophies){
+						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
+						the_trophy.pack = the_pack;
+						this.register_trophy(the_trophy);
+					}
 				}
 			}
 		}
-	},
-
-	set_disabled_trophies: function(){
-
 	},
 
 	register_trophy: function(trophy){
@@ -244,8 +234,8 @@ var trophies = {
 	 */
 
 	move_to_key: function(){
-		this.data(yootil.user.id()).clear.synced();
-		this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
+		//this.data(yootil.user.id()).clear.synced();
+		//this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
 	},
 
 	/**
@@ -259,6 +249,7 @@ var trophies = {
 	},
 
 	/**
+	 * MOVE TO YOOTIL
 	 * Checks a number and returns the correct suffix to be used with it.
 	 *
 	 *     trophies.get_suffix(3); // "rd"
@@ -339,6 +330,22 @@ var trophies = {
 	 */
 
 	setup_user_data_table: function(){
+		for(var pack in this.packs){
+			var pack_data = proboards.plugin.keys.data[this.packs[pack]];
+			var local_data = yootil.storage.get(this.packs[pack], true) || {};
+
+			for(var user in pack_data){
+				this.data(user).add.pack(this.packs[pack], this.check_data(pack_data[user]));
+
+				if(yootil.user.logged_in() && user == yootil.user.id()){
+				//	this.data(user).setup_pack_local_data
+				}
+			}
+		}
+
+
+
+		/*
 		var core_data = proboards.plugin.keys.data[this.KEY];
 		var got_data = false;
 		var local_data = yootil.storage.get("pixeldepth_trophies", true) || {};
@@ -384,7 +391,7 @@ var trophies = {
 			this.user_data_table[yootil.user.id()] = new this.Data(yootil.user.id(), {}, {});
 		}
 		
-		this.show_unseen_trophies();
+		this.show_unseen_trophies();*/
 	},
 
 	/**
@@ -399,19 +406,11 @@ var trophies = {
 		var user_data = this.user_data_table[((user_id)? user_id : yootil.user.id())];
 
 		if(!user_data){
-			user_data = new this.Data(user_id, {}, {});
+			user_data = new this.Data(user_id);
 			this.user_data_table[user_id] = user_data;
 		}
 
 		return user_data;
-	},
-
-	/**
-	 * Refresh the user data lookup table.
-	 */
-	
-	refresh_user_data_table: function(){
-		this.setup_user_data_table();
 	},
 
 	/**
@@ -431,17 +430,13 @@ var trophies = {
 	},
 
 	fetch_image: function(trophy){
-		if(typeof trophy.pack != "undefined" && trophy.pack != "core"){
-			var plugin = proboards.plugin.get("trophy_" + trophy.pack + "_pack");
+		var plugin = proboards.plugin.get(trophy.pack);
 
-			if(plugin && plugin.images && plugin.images[trophy.image]){
-				return plugin.images[trophy.image];
-			} else {
-				return this.images.missing;
-			}
+		if(plugin && plugin.images && plugin.images[trophy.image]){
+			return plugin.images[trophy.image];
 		}
 
-		return this.images[trophy.image];
+		return this.images.missing;
 	},
 
 	/**

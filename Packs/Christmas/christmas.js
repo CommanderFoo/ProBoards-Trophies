@@ -2,9 +2,11 @@ if(typeof TROPHY_REGISTER == "undefined"){
 	TROPHY_REGISTER = {};
 }
 
-$.extend(TROPHY_REGISTER, {
+TROPHY_REGISTER["trophies_xmas_pack"] = {
 
-	"xmas": [
+	key: "trophies_xmas_pack",
+
+	"trophies": [
 
 		{
 
@@ -44,4 +46,4 @@ $.extend(TROPHY_REGISTER, {
 
 	]
 
-});
+};
