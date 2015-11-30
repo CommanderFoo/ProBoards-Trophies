@@ -5,7 +5,7 @@
  * Main class.
  */
 
-var trophies = {
+$.extend(trophies, {
 
 	/**
 	 * Holds the latest version of this plugin.
@@ -42,7 +42,7 @@ var trophies = {
 	 * @property {String} route
 	 */
 
-	route: null,
+	route: "",
 
 	/**
 	 * @property {Object} params Reference to ProBoards page params.
@@ -138,29 +138,15 @@ var trophies = {
 		this.register_trophy_pack();
 		this.setup_user_data_table();
 
-		/*
-		this.init_trophy_checks();
-				
-		if(yootil.location.profile()){
-			this.create_tab();
+		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
+			//this.show_unseen_trophies();
+			this.init_trophy_checks();
+			this.bind_events();
 		}
 
-		var posting = (yootil.location.thread() || yootil.location.editing() || yootil.location.posting());
-		var messaging = (yootil.location.conversation_new() || yootil.location.messaging());
-
-		if(posting || messaging){
-			var the_form;
-
-			if(posting){
-				the_form = yootil.form.any_posting();
-			} else{
-				the_form = yootil.form.any_messaging();
-			}
-
-			if(the_form.length == 1){
-				this.bind_form_submit(the_form);
-			}
-		}*/
+		if(yootil.location.profile()){
+			//this.create_tab();
+		}
 	},
 
 	/**
@@ -221,21 +207,28 @@ var trophies = {
 
 	/**
 	 * Binds a submit handler to the posting and messaging forms for moving local data to the key.
-	 *
-	 * @param {Object} the_form The form getting the handler.
 	 */
 
-	bind_form_submit: function(the_form){
-		the_form.bind("submit", $.proxy(this.move_to_key, this));
-	},
+	bind_events: function(){
+		var posting = (yootil.location.thread() || yootil.location.editing() || yootil.location.posting());
+		var messaging = (yootil.location.conversation_new() || yootil.location.messaging());
 
-	/**
-	 * We need to move local trophy data that has been seen to the key.
-	 */
+		if(posting || messaging){
+			var the_form;
 
-	move_to_key: function(){
-		//this.data(yootil.user.id()).clear.synced();
-		//this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
+			if(posting){
+				the_form = yootil.form.any_posting();
+			} else{
+				the_form = yootil.form.any_messaging();
+			}
+
+			if(the_form.length == 1){
+				the_form.bind("submit", $.proxy(function(){
+					//this.data(yootil.user.id()).clear.synced();
+					//this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
+				}, this));
+			}
+		}
 	},
 
 	/**
@@ -246,34 +239,6 @@ var trophies = {
 
 	version: function(){
 		return this.VERSION;
-	},
-
-	/**
-	 * MOVE TO YOOTIL
-	 * Checks a number and returns the correct suffix to be used with it.
-	 *
-	 *     trophies.get_suffix(3); // "rd"
-	 *
-	 * @param {Number} n The number to be checked.
-	 * @return {String}
-	 */
-
-	get_suffix: function(n){
-		var j = (n % 10);
-
-		if(j == 1 && n != 11){
-			return "st";
-		}
-
-		if(j == 2 && n != 12){
-		    return "nd";
-		}
-
-		if(j == 3 && n != 13) {
-			return "rd";
-		}
-
-		return "th";
 	},
 
 	/**
@@ -307,22 +272,6 @@ var trophies = {
 	},
 
 	/**
-	 * Checks the data type to make sure it's correct.  The reason for this is because ProBoards
-	 * never used to JSON stringify values, so we check to make sure it's not double stringified.
-	 *
-	 * @param {String} data The key data.
-	 * @return {Object}
-	 */
-
-	check_data: function(data){
-		if(typeof data == "string" && yootil.is_json(data)){
-			data = JSON.parse(data);
-		}
-
-		return data;
-	},
-
-	/**
 	 * This sets up the lookup table for all users on the current page.  Each entry is an instance of Data.  Always
 	 * look here before creating your own instance, as multiple instances would not be good.
 	 *
@@ -335,63 +284,9 @@ var trophies = {
 			var local_data = yootil.storage.get(this.packs[pack], true) || {};
 
 			for(var user in pack_data){
-				this.data(user).add.pack(this.packs[pack], this.check_data(pack_data[user]));
-
-				if(yootil.user.logged_in() && user == yootil.user.id()){
-				//	this.data(user).setup_pack_local_data
-				}
+				this.data(user).add.pack(this.packs[pack], this.utils.check_data(pack_data[user]), (yootil.user.id() == user)? local_data : {});
 			}
 		}
-
-
-
-		/*
-		var core_data = proboards.plugin.keys.data[this.KEY];
-		var got_data = false;
-		var local_data = yootil.storage.get("pixeldepth_trophies", true) || {};
-		
-		for(var key in core_data){
-			var data = this.check_data(core_data[key]);
-			var local = {};
-			
-			if(yootil.user.logged_in() && key == yootil.user.id()){
-				local = local_data;
-			}
-			
-			if(key == yootil.user.id()){
-				got_data = true;	
-			}
-
-			this.user_data_table[key] = {
-
-				data_core: data,
-				data_local: local,
-				data_pack: {}
-
-			};
-		}
-
-		if(this.packs.length){
-			for(var p in this.packs){
-				var pack_data = proboards.plugin.keys.data["trophy_" + this.packs[p] + "_pack"];
-
-				for(var user in pack_data){
-					var user_data = this.check_data(pack_data[user]);
-
-					this.user_data_table[user].data_pack[this.packs[p]] = user_data;
-				}
-			}
-		}
-
-		for(var u in this.user_data_table){
-			this.user_data_table[u] = new this.Data(u, this.user_data_table[u], local);
-		}
-
-		if(!got_data && yootil.user.logged_in()){
-			this.user_data_table[yootil.user.id()] = new this.Data(yootil.user.id(), {}, {});
-		}
-		
-		this.show_unseen_trophies();*/
 	},
 
 	/**
@@ -418,242 +313,13 @@ var trophies = {
 	 */
 
 	init_trophy_checks: function(){
-		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
-			for(var key in this.list){
-				var t = this.list[key];
+		for(var key in this.list){
+			var t = this.list[key];
 	
-				if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(t)){
-					t.callback.call(this, t);
-				}
+			if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(t)){
+				t.callback.call(this, t);
 			}
 		}
-	},
-
-	fetch_image: function(trophy){
-		var plugin = proboards.plugin.get(trophy.pack);
-
-		if(plugin && plugin.images && plugin.images[trophy.image]){
-			return plugin.images[trophy.image];
-		}
-
-		return this.images.missing;
-	},
-
-	/**
-	 * Creates the trophy notification html.
-	 *
-	 * @param {Object} trophy The trophy data to be shown to the user.
-	 * @returns {String}
-	 */
-
-	create_notification: function(trophy){
-		var notification = "";
-
-		notification += "<div id='trophy-" + trophy.id + "' class='trophy-notification' style='display: none;'>";
-		notification += "<div class='trophy-notification-left'><img class='trophy-notification-img' src='" + trophies.fetch_image(trophy) + "' /></div>";
-		notification += "<div class='trophy-notification-title' class='trophy-notification-left'>You have earned a trophy.";
-		notification += "<p class='trophy-notification-info'><img class='trophy-notification-cup' src='" + this.images[trophy.cup] + "' /> ";
-		notification += "<span class='trophy-notification-txt'>" + trophy.title + "</span></p></div></div>";
-
-		$("body").append($(notification));
-
-		return notification;
-	},
-
-	show_notification: function(trophy){
-		if(!this.allowed_to_earn_trophies() || this.data(yootil.user.id()).trophy.seen(trophy)){
-			return;	
-		}
-
-		this.data(yootil.user.id()).set.local.trophy(trophy);
-		
-		var notification = this.create_notification(trophy);
-		var self = this;
-
-		this.queue.add(function(){
-			$("div#trophy-" + trophy.id).delay(200).fadeIn("normal", function(){
-				self.data(yootil.user.id()).set.local.seen(trophy.id);
-			}).delay(3500).fadeOut("normal", function(){
-				$(this).remove();
-				self.queue.next();
-			});
-		});
-	},
-	
-	show_unseen_trophies: function(){
-		var unseen_trophies = this.data(yootil.user.id()).get.local_data();
-
-		//trophies = this.sort_unseen_trophies(trophies);
-
-		for(var t in unseen_trophies){
-			if(!this.exist(t)){
-				this.data(yootil.user.id()).remove.trophy(t, true);
-
-			} else if(!unseen_trophies[t].s){
-				this.show_notification(this.list[t]);
-			}
-		}
-	},
-
-	/*sort_unseen_trophies: function(trophies){
-		var sorted_trophies = [];
-
-		for(var t in trophies){
-			sorted_trophies.push({key: t, value: trophies[t]})
-		}
-
-		sorted_trophies.sort(function(a, b){
-			return a.key - b.key;
-		});
-
-		return sorted_trophies;
-	},*/
-	
-	create_tab: function(){
-		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
-		var first_box = $("form.form_user_status .content-box:first");
-
-		if(first_box.length){
-			var trophy_stats = yootil.create.profile_content_box();
-			var trophy_list = yootil.create.profile_content_box();
-			var stats_html = (this.settings.show_on_profile)? this.create_trophy_stats() : "";
-
-			if(stats_html.length){
-				trophy_stats.html(stats_html);
-			}
-
-			if(!active){
-				if(this.settings.show_on_profile){
-					if(yootil.user.id() == yootil.page.member.id()){
-						trophy_stats.insertAfter(first_box);
-					} else{
-						trophy_stats.insertBefore(first_box);
-					}
-				}
-			} else {
-				trophy_stats.appendTo($("form.form_user_status").parent());
-				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
-			}
-
-			yootil.create.profile_tab("Trophies", "trophies", active);
-		}
-	},
-	
-	build_trophy_list: function(){
-		var trophy_list = "";
-		var counter = 0;
-		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
-		var the_user = yootil.page.member.id() || yootil.user.id();
-
-		for(var id in this.list){
-			var trophy = this.list[id];
-			
-			if(trophy.disabled){
-				continue;	
-			}
-			
-			var has_earned = (yootil.user.logged_in() && this.data(the_user).trophy.earned(trophy))? true : false;
-			var cup_big = this.images.bronze_big;
-			var cup_small = this.images.bronze;
-			var trophy_img = (has_earned)? this.fetch_image(trophy) : this.images["locked"];
-			var alt = "Bronze";
-			var first = (!counter)? " trophy-list-trophy-first" : "";
-			var opacity = (has_earned)? "" : " trophy-list-trophy-not-earned";
-									
-			switch(trophy.cup){
-				
-				case "silver" :
-					cup_big = this.images.silver_big;
-					cup_small = this.images.silver;
-					alt = "Silver";
-					
-					break;
-
-				case "gold" :
-					cup_big = this.images.gold_big;
-					cup_small = this.images.gold;
-					alt = "Gold";
-					
-					break;
-									
-			}
-			
-			var date_str = "";
-			var the_trophy = this.data(the_user).get.trophy(id);
-			
-			if(the_trophy && the_trophy.t && has_earned){
-				var date = new Date(the_trophy.t);
-				var day = date.getDate() || 1;
-				var month = this.months[date.getMonth()];
-				var year = date.getFullYear();
-				var hours = date.getHours();
-				var mins = date.getMinutes();
-				var am_pm = "";
-	
-				mins = (mins < 10)? "0" + mins : mins;
-				date_str = "Earned on " + day + this.get_suffix(day) + " of " + month + ", " + year;
-	
-				if(!time_24){
-					am_pm = (hours > 11)? "pm" : "am";
-					hours = hours % 12;
-					hours = (hours)? hours : 12;
-				}
-	
-				date_str += ", at " + hours + ":" + mins + am_pm;
-			}
-			
-			var big_cup_img = "<img src='" + yootil.html_encode(cup_big) + "' title='" + alt + "' alt='" + alt + "' />";
-			var small_cup_img = "<img src='" + yootil.html_encode(cup_small) + "' title='" + alt + "' alt='" + alt + "' />";
-
-			var title = "";
-
-			if(this.settings.show_id){
-				title = "title='Trophy ID: " + id + "' ";
-			}
-
-			trophy_list += "<div class='trophy-list-trophy" + first + opacity + "'>";
-			trophy_list += "<div class='trophy-list-trophy-img'><img " + title + "src='" + trophy_img + "' /></div>";
-			trophy_list += "<div class='trophy-list-trophy-title-desc'>";
-			trophy_list += "<div class='trophy-list-trophy-title'><span class='trophy-list-trophy-title-cup'>" + small_cup_img + "</span> <strong>" + yootil.html_encode(trophy.title) + "</strong></div>";
-			trophy_list += "<div class='trophy-list-trophy-desc'>" + yootil.html_encode(trophy.description) + ".</div></div>";
-			trophy_list += "<div class='trophy-list-trophy-big-cup'>" + big_cup_img + "</div>";
-			trophy_list += "<div class='trophy-list-trophy-earned-date'>" + date_str + "</div>";
-			trophy_list += "<br style='clear: both' /></div>";
-			
-			counter ++;
-		}
-		
-		if(!trophy_list.length){
-			var to_user = (yootil.user.id() == yootil.page.member.id())? "You have" : (yootil.page.member.name() + " has");
-			
-			trophy_list = "<div class='trophies-list-profile trophies-list-none'>" + yootil.html_encode(to_user) + " not earned any trophies.</div>";	
-		}
-		
-		return trophy_list;
-	},
-
-	create_trophy_stats: function(){
-		var data = this.data(yootil.page.member.id());
-		var html = "";
-
-		html += "<div class='trophy-stats-wrapper'>";
-		html += "<div class='trophy-stats-big-cup'><img src='" + this.images.trophy_level + "' /></div>";
-		html += "<div class='trophy-stats-level-wrapper'><strong>Level</strong><br /><strong class='trophy-stats-level'>" + data.get.current_level() + "</strong></div>";
-		html += "<div class='trophy-stats-percent-wrapper'><div class='trophy-stats-percent-bar-wrapper'><div class='trophy-stats-percent-bar' style='width: " + data.get.level_percentage() + "%;'> </div></div></div>";
-		html += "<div class='trophy-stats-total-cups-wrapper'><ul>";
-		html += "<li class='trophy-stats-cup-bronze-img'><img src='" + this.images.bronze + "' /></li>";
-		html += "<li class='trophy-stats-cup-bronze-total'>" + data.get.cups.bronze() + "</li>";
-		html += "<li class='trophy-stats-cup-spacer'> </li>";
-		html += "<li class='trophy-stats-cup-silver-img'><img src='" + this.images.silver + "' /></li>";
-		html += "<li class='trophy-stats-cup-silver-total'>" + data.get.cups.silver() + "</li>";
-		html += "<li class='trophy-stats-cup-spacer'> </li>";
-		html += "<li class='trophy-stats-cup-gold-img'><img src='" + this.images.gold + "' /></li>";
-		html += "<li class='trophy-stats-cup-gold-total'>" + data.get.cups.gold() + "</li>";
-		html += "</ul><br style='clear: both' /></div>";
-		html += "<div class='trophy-stats-total-trophies-wrapper'><strong>Trophies</strong><br /><strong class='trophy-stats-total-trophies'>" + data.get.total_trophies() + "</strong></div>";
-		html += "</div>";
-
-		return html;
 	},
 
 	/**
@@ -698,14 +364,6 @@ var trophies = {
 		}
 
 		return true;
-	},
-
-	exist: function(id){
-		if(!this.list[id]){
-			return false
-		}
-
-		return true;
 	}
 
-};
+});

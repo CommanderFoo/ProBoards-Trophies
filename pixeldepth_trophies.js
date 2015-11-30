@@ -3,6 +3,7 @@ if(typeof pixeldepth == "undefined"){
 }
 
 pixeldepth.trophies = trophies = (function(){
+	var trophies = {};
 	{PLUGIN}
 	return trophies;
 
