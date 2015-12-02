@@ -11,7 +11,7 @@ $.extend(trophies, {
 		var notification = "";
 
 		notification += "<div id='trophy-" + trophy.id + "' class='trophy-notification' style='display: none;'>";
-		notification += "<div class='trophy-notification-left'><img class='trophy-notification-img' src='" + trophies.utils.fetch_image(trophy) + "' /></div>";
+		notification += "<div class='trophy-notification-left'><img class='trophy-notification-img' src='" + this.utils.fetch_image(trophy) + "' /></div>";
 		notification += "<div class='trophy-notification-title' class='trophy-notification-left'>You have earned a trophy.";
 		notification += "<p class='trophy-notification-info'><img class='trophy-notification-cup' src='" + this.images[trophy.cup] + "' /> ";
 		notification += "<span class='trophy-notification-txt'>" + trophy.title + "</span></p></div></div>";
@@ -46,6 +46,26 @@ $.extend(trophies, {
 	show_unseen_trophies: function(){
 		var unseen_trophies = this.data(yootil.user.id()).get.local_data();
 
+		for(var pack in unseen_trophies){
+			if(this.utils.pack.exists(pack)){
+				for(var trophy in unseen_trophies[pack]){
+					var the_trophy = {
+
+						id: trophy,
+						pack: pack,
+						s: unseen_trophies[pack][trophy].s || 0
+
+					};
+
+					if(this.utils.trophy.exists(the_trophy) && !this.data(yootil.user.id()).trophy.seen(the_trophy)){
+						this.show_notification(this.lookup[pack][trophy]);
+					}
+				}
+			}
+		}
+
+		/*
+		con
 		//unseen_trophies = this.sort_unseen_trophies(trophies);
 
 		for(var t in unseen_trophies){
@@ -54,7 +74,7 @@ $.extend(trophies, {
 			} else if(!unseen_trophies[t].s){
 				this.show_notification(this.list[t]);
 			}
-		}
+		}*/
 	}
 
 	/*sort_unseen_trophies: function(trophies){

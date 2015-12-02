@@ -1,12 +1,15 @@
 trophies.utils = {
 
 	trophy: {
-		exists: function(trophy_id){
-			if(!trophies.list[trophy_id]){
+
+		exists: function(trophy){
+			if(!trophy || !trophy.id || !trophy.pack || !trophies.lookup[trophy.pack] || !trophies.lookup[trophy.pack][trophy.id]){
 				return false;
 			}
+
 			return true;
 		}
+
 	},
 
 	/**
@@ -60,7 +63,7 @@ trophies.utils = {
 			return plugin.images[trophy.image];
 		}
 
-		return this.images.missing;
+		return trophies.images.missing;
 	},
 
 	get: {
@@ -71,6 +74,23 @@ trophies.utils = {
 			}
 
 			return null;
+		},
+
+		trophies_list: function(user){
+			var list = [];
+
+		}
+
+	},
+
+	pack: {
+
+		exists: function(pack){
+			if($.inArray(pack, trophies.packs) > -1){
+				return true;
+			}
+
+			return false;
 		}
 
 	}

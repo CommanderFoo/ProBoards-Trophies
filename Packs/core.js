@@ -4,7 +4,11 @@ if(typeof TROPHY_REGISTER == "undefined"){
 
 TROPHY_REGISTER["pixeldepth_trophies"] = {
 
-	key: "pixeldepth_trophies",
+	plugin_id: "pixeldepth_trophies",
+	plugin_key: "pixeldepth_trophies",
+
+	trophies_key: "t",
+	trophies_data_key: "d",
 
 	"trophies": [
 
@@ -20,7 +24,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				this.show_notification(trophy, false, false);
 			}
 
-		},
+		}/*,
 
 		{
 
@@ -164,7 +168,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				}
 			}
 
-		}
+		}*/
 
 	]
 

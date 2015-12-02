@@ -118,7 +118,7 @@ $.extend(trophies, {
 
 	queue: null,
 
-	list: {},
+	lookup: {},
 
 	packs: [],
 
@@ -139,7 +139,7 @@ $.extend(trophies, {
 		this.setup_user_data_table();
 
 		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
-			//this.show_unseen_trophies();
+			this.show_unseen_trophies();
 			this.init_trophy_checks();
 			this.bind_events();
 		}
@@ -187,6 +187,25 @@ $.extend(trophies, {
 				if(typeof TROPHY_REGISTER[the_pack].trophies != "undefined" && TROPHY_REGISTER[the_pack].trophies.constructor == Array && TROPHY_REGISTER[the_pack].trophies.length){
 					this.packs.push(the_pack);
 
+					TROPHY_REGISTER[the_pack].pack = the_pack;
+					TROPHY_REGISTER[the_pack].total_trophies = TROPHY_REGISTER[the_pack].trophies.length;
+
+					if(!TROPHY_REGISTER[the_pack].plugin_id){
+						TROPHY_REGISTER[the_pack].plugin_id = TROPHY_REGISTER[the_pack].plugin_key || null;
+					}
+
+					if(!TROPHY_REGISTER[the_pack].plugin_key){
+						TROPHY_REGISTER[the_pack].plugin_key = TROPHY_REGISTER[the_pack].plugin_id || null;
+					}
+
+					if(!TROPHY_REGISTER[the_pack].trophies_key){
+						TROPHY_REGISTER[the_pack].trophies_key = "t";
+					}
+
+					if(!TROPHY_REGISTER[the_pack].trophies_data_key){
+						TROPHY_REGISTER[the_pack].trophies_data_key = false;
+					}
+
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
 						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
 						the_trophy.pack = the_pack;
@@ -198,11 +217,17 @@ $.extend(trophies, {
 	},
 
 	register_trophy: function(trophy){
-		if(typeof trophy == "undefined" || typeof trophy.id == "undefined" || this.list[trophy.id]){
+		if(typeof trophy == "undefined" || typeof trophy.id == "undefined"){
 			return;
 		}
 
-		this.list[trophy.id] = trophy;
+		if(!this.lookup[trophy.pack]){
+			this.lookup[trophy.pack] = {};
+		}
+
+		if(!this.lookup[trophy.pack][trophy.id]){
+			this.lookup[trophy.pack][trophy.id] = trophy;
+		}
 	},
 
 	/**
@@ -284,8 +309,10 @@ $.extend(trophies, {
 			var local_data = yootil.storage.get(this.packs[pack], true) || {};
 
 			for(var user in pack_data){
-				this.data(user).add.pack(this.packs[pack], this.utils.check_data(pack_data[user]), (yootil.user.id() == user)? local_data : {});
+				this.data(user).add.pack_data(this.packs[pack], this.utils.check_data(pack_data[user]));
 			}
+
+			this.data(yootil.user.id()).add.pack_local_data(this.packs[pack], local_data);
 		}
 	},
 
@@ -313,11 +340,13 @@ $.extend(trophies, {
 	 */
 
 	init_trophy_checks: function(){
-		for(var key in this.list){
-			var t = this.list[key];
+		for(var pack in this.lookup){
+			for(var id in this.lookup[pack]){
+				var trophy = this.lookup[pack][id];
 	
-			if(!t.disabled && typeof t.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(t)){
-				t.callback.call(this, t);
+				if(!trophy.disabled && typeof trophy.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(trophy)){
+					trophy.callback.call(this, trophy);
+				}
 			}
 		}
 	},

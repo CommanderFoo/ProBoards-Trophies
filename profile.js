@@ -5,6 +5,8 @@ $.extend(trophies, {
 		var first_box = $("form.form_user_status .content-box:first");
 
 		if(first_box.length){
+			this.data(yootil.page.member.id() || yootil.user.id()).calculate_stats();
+
 			var trophy_stats = yootil.create.profile_content_box();
 			var trophy_list = yootil.create.profile_content_box();
 			var stats_html = (this.settings.show_on_profile)? this.create_trophy_stats() : "";
@@ -23,7 +25,7 @@ $.extend(trophies, {
 				}
 			} else {
 				trophy_stats.appendTo($("form.form_user_status").parent());
-				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
+				//trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
 			}
 
 			yootil.create.profile_tab("Trophies", "trophies", active);
@@ -35,6 +37,7 @@ $.extend(trophies, {
 		var counter = 0;
 		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
 		var the_user = yootil.page.member.id() || yootil.user.id();
+		var list = this.utils.get.trophies_list(the_user);
 
 		for(var id in this.list){
 			var trophy = this.list[id];
