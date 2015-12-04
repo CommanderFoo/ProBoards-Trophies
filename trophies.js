@@ -145,7 +145,7 @@ $.extend(trophies, {
 		}
 
 		if(yootil.location.profile()){
-			//this.create_tab();
+			this.create_tab();
 		}
 	},
 

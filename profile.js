@@ -25,7 +25,7 @@ $.extend(trophies, {
 				}
 			} else {
 				trophy_stats.appendTo($("form.form_user_status").parent());
-				//trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
+				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
 			}
 
 			yootil.create.profile_tab("Trophies", "trophies", active);
@@ -37,9 +37,11 @@ $.extend(trophies, {
 		var counter = 0;
 		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
 		var the_user = yootil.page.member.id() || yootil.user.id();
-		var list = this.utils.get.trophies_list(the_user);
+		var list = this.utils.get.all_trophies(the_user);
 
-		for(var id in this.list){
+		console.log(list);
+
+		/*for(var id in this.list){
 			var trophy = this.list[id];
 
 			if(trophy.disabled){
@@ -115,12 +117,12 @@ $.extend(trophies, {
 			trophy_list += "<br style='clear: both' /></div>";
 
 			counter ++;
-		}
+		}*/
 
 		if(!trophy_list.length){
 			var to_user = (yootil.user.id() == yootil.page.member.id())? "You have" : (yootil.page.member.name() + " has");
 
-			trophy_list = "<div class='trophies-list-profile trophies-list-none'>" + yootil.html_encode(to_user) + " not earned any trophies.</div>";
+			trophy_list = "<div class='trophies-list-profile trophies-list-none'>" + yootil.html_encode(to_user, true) + " not earned any trophies.</div>";
 		}
 
 		return trophy_list;

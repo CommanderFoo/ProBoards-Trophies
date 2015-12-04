@@ -16,7 +16,7 @@ trophies.Data = (function(){
 		this.trophy_data = {};
 		this.trophy_local_data = {};
 		this.trophy_merged_data = {};
-
+		this.user_trophies = {};
 
 		this.stats = {
 
@@ -247,6 +247,10 @@ trophies.Data = (function(){
 
 				}
 
+			},
+
+			trophies: function(){
+				return self.user_trophies;
 			}
 
 		};
@@ -337,8 +341,8 @@ trophies.Data = (function(){
 							}
 						}
 
-						if(pack_info.trophies_key){
-							yootil.storage.set(pack_info.trophies_key, self.trophy_local_data[trophy.pack], true, true);
+						if(pack_info.plugin_key){
+							yootil.storage.set(pack_info.plugin_key, self.trophy_local_data[trophy.pack], true, true);
 						}
 					}
 				}
@@ -405,15 +409,13 @@ trophies.Data = (function(){
 		};
 
 		this.calculate_stats = function(){
-			var merged_data = {};
-
 			for(var pack in this.trophy_data){
 				if(trophies.utils.pack.exists(pack)){
 					var pack_info = trophies.utils.get.pack(pack);
 
 					if(pack_info){
-						if(!merged_data[pack]){
-							merged_data[pack] = {};
+						if(!this.user_trophies[pack]){
+							this.user_trophies[pack] = {};
 						}
 
 						for(var trophy in this.trophy_data[pack][pack_info.trophies_key]){
@@ -425,7 +427,7 @@ trophies.Data = (function(){
 							};
 
 							if(trophies.utils.trophy.exists(the_trophy)){
-								merged_data[pack][trophy] = this.trophy_data[pack][pack_info.trophies_key][trophy];
+								this.user_trophies[pack][trophy] = this.trophy_data[pack][pack_info.trophies_key][trophy];
 							}
 						}
 					}
@@ -437,8 +439,8 @@ trophies.Data = (function(){
 					var pack_info = trophies.utils.get.pack(pack);
 
 					if(pack_info){
-						if(!merged_data[pack]){
-							merged_data[pack] = {};
+						if(!this.user_trophies[pack]){
+							this.user_trophies[pack] = {};
 						}
 
 						for(var trophy in this.trophy_local_data[pack][pack_info.trophies_key]){
@@ -450,8 +452,8 @@ trophies.Data = (function(){
 							};
 
 							if(trophies.utils.trophy.exists(the_trophy)){
-								if(!merged_data[pack][trophy]){
-									merged_data[pack][trophy] = this.trophy_local_data[pack][pack_info.trophies_key][trophy];
+								if(!this.user_trophies[pack][trophy]){
+									this.user_trophies[pack][trophy] = this.trophy_local_data[pack][pack_info.trophies_key][trophy];
 								}
 							}
 						}
@@ -459,7 +461,60 @@ trophies.Data = (function(){
 				}
 			}
 
+			for(var pack in this.user_trophies){
+				for(var trophy in this.user_trophies[pack]){
+					if(!trophies.lookup[pack][trophy] || trophies.lookup[pack][trophy].disabled){
+						continue;
+					}
 
+					var lookup_trophy = trophies.lookup[pack][trophy];
+
+					this.stats.total_trophies ++;
+
+					switch(lookup_trophy.cup){
+
+						case "bronze" :
+							this.stats.total_points += 30;
+							this.stats.cups.bronze ++;
+							break;
+
+						case "silver" :
+							this.stats.total_points += 60;
+							this.stats.cups.silver ++;
+							break;
+
+						case "gold" :
+							this.stats.total_points += 120;
+							this.stats.cups.gold ++;
+							break;
+
+					}
+				}
+			}
+
+			if(this.stats.total_points > 0){
+				for(var level in trophies.levels){
+					if(this.stats.total_points >= trophies.levels[level] && this.stats.total_points < trophies.levels[(parseInt(level) + 1).toString()]){
+						this.stats.current_level = level;
+						this.stats.next_level = (parseInt(level) + 1);
+						break;
+					}
+				}
+			}
+
+			var next_level_points = trophies.levels[this.stats.next_level];
+			var points_needed = (next_level_points - this.stats.total_points);
+			var pecent = 0;
+
+			if(next_level_points){
+				percent = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
+			}
+
+			if(percent > 100){
+				percent = 100;
+			}
+
+			this.stats.level_percentage = percent;
 		}
 	}
 

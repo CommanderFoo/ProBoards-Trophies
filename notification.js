@@ -44,21 +44,27 @@ $.extend(trophies, {
 	},
 
 	show_unseen_trophies: function(){
-		var unseen_trophies = this.data(yootil.user.id()).get.local_data();
+		var local_data = this.data(yootil.user.id()).get.local_data();
 
-		for(var pack in unseen_trophies){
+		for(var pack in local_data){
 			if(this.utils.pack.exists(pack)){
-				for(var trophy in unseen_trophies[pack]){
-					var the_trophy = {
+				var pack_info = trophies.utils.get.pack(pack);
 
-						id: trophy,
-						pack: pack,
-						s: unseen_trophies[pack][trophy].s || 0
+				if(pack_info && local_data[pack_info.pack][pack_info.trophies_key]){
+					var local_trophies = local_data[pack_info.pack][pack_info.trophies_key];
 
-					};
+					for(var trophy in local_trophies){
+						var the_trophy = {
 
-					if(this.utils.trophy.exists(the_trophy) && !this.data(yootil.user.id()).trophy.seen(the_trophy)){
-						this.show_notification(this.lookup[pack][trophy]);
+							id: trophy,
+							pack: pack,
+							s: local_trophies[trophy].s || 0
+
+						};
+
+						if(this.utils.trophy.exists(the_trophy) && !this.data(yootil.user.id()).trophy.seen(the_trophy)){
+							this.show_notification(this.lookup[pack_info.pack][trophy]);
+						}
 					}
 				}
 			}
