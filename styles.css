@@ -43,96 +43,136 @@ img.trophy-notification-cup {
 
 }
 
-div.trophy-stats-wrapper div.trophy-stats-big-cup {
+div.trophy-stats-wrapper {
 
-	float: left;
-	margin-right: 20px;
-	
+	display: table;
+	width: 100%;
+	border-spacing: 4px;
+
 }
 
-div.trophy-stats-wrapper div.trophy-stats-level-wrapper {
+div.trophy-stats {
 
-	float: left;
-	margin-right: 20px;
-	font-weight: 16px;
+	display: table-row;
+
+}
+
+
+div.trophy-stats div.trophy-stats-big-cup {
+
+	display: table-cell;
+	vertical-align: middle;
 	text-align: center;
-	
+	width: 64px;
+	background-position: center center;
+	background-repeat: no-repeat;
+
 }
 
-div.trophy-stats-wrapper strong.trophy-stats-level {
-	
+div.trophy-stats div.trophy-stats-level {
+
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	width: 90px;
+
+}
+
+div.trophy-stats div.trophy-stats-progress {
+
+	display: table-cell;
+	vertical-align: middle;
+	text-align: left;
+	width: 300px;
+
+}
+
+div.trophy-stats div.trophy-stats-next-level {
+
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	width: 90px;
+
+}
+
+div.trophy-stats div.trophy-stats-misc {
+
+	display: table-cell;
+
+}
+
+div.trophy-stats div.trophy-stats-total-trophies {
+
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	width: 110px;
+
+}
+
+div.trophy-stats div.trophy-stats-total-cups {
+
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	width: 50px;
+
+}
+
+div.trophy-stats div.trophy-stats-big-cup {
+
+	font-size: 11px;
+
+
+}
+
+div.trophy-stats div.trophy-stats-total-trophies span, div.trophy-stats div.trophy-stats-level span, div.trophy-stats div.trophy-stats-next-level span  {
+
 	font-size: 40px;
 
 }
 
-div.trophy-stats-wrapper div.trophy-stats-percent-wrapper {
-	
-	float: left;
-	
-}
+div.trophy-stats div.trophy-stats-percent-bar-wrapper {
 
-div.trophy-stats-wrapper div.trophy-stats-percent-bar-wrapper {
-	
-	margin-top: 25px;
 	border: 1px solid black;
 	padding: 1px;
 	height: 15px;
-	width: 400px
+	width: 400px;
 
 }
 
-div.trophy-stats-wrapper div.trophy-stats-percent-bar {
+div.trophy-stats div.trophy-stats-percent-bar {
 
 	background-color: #D6A314;
 	height: 15px;
-	
+
 }
 
-div.trophy-stats-wrapper div.trophy-stats-total-cups-wrapper {
-	
-	float: right;
-		
-}
-
-div.trophy-stats-wrapper div.trophy-stats-total-cups-wrapper ul {
+div.trophy-stats div.trophy-stats-total-cups ul {
 	
 	width: 55px;
 	
 }
 
-div.trophy-stats-wrapper div.trophy-stats-total-trophies-wrapper {
-	
-	float: right;
-	margin-right: 35px;
-	font-weight: 16px;
-	text-align: center;
-	
-}
-
-div.trophy-stats-wrapper strong.trophy-stats-total-trophies {
-
-	font-size: 40px;
-	
-}
-
-div.trophy-stats-wrapper li.trophy-stats-cup-bronze-img, div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-img, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total, div.trophy-stats-wrapper li.trophy-stats-cup-gold-img, div.trophy-stats-wrapper li.trophy-stats-cup-gold-total {
+div.trophy-stats-total-cups li.trophy-stats-cup-bronze-img, div.trophy-stats-total-cups li.trophy-stats-cup-bronze-total, div.trophy-stats-total-cups li.trophy-stats-cup-silver-img, div.trophy-stats-total-cups li.trophy-stats-cup-silver-total, div.trophy-stats-total-cups li.trophy-stats-cup-gold-img, div.trophy-stats-total-cups li.trophy-stats-cup-gold-total {
 
 	float: left;
 
 }
 
-div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total, div.trophy-stats-wrapper li.trophy-stats-cup-gold-total {
+div.trophy-stats-total-cups li.trophy-stats-cup-bronze-total, div.trophy-stats-total-cups li.trophy-stats-cup-silver-total, div.trophy-stats-total-cups li.trophy-stats-cup-gold-total {
 
 	margin-left: 5px;
 	
 }
 
-div.trophy-stats-wrapper li.trophy-stats-cup-bronze-total, div.trophy-stats-wrapper li.trophy-stats-cup-silver-total {
+div.trophy-stats-total-cups li.trophy-stats-cup-bronze-total, div.trophy-stats-total-cups li.trophy-stats-cup-silver-total {
 
 	margin-bottom: 6px;
 }
 
-div.trophy-stats-wrapper li.trophy-stats-cup-spacer {
+div.trophy-stats-total-cups li.trophy-stats-cup-spacer {
 
 	clear: both;
 	

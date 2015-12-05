@@ -24,7 +24,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				this.show_notification(trophy, false, false);
 			}
 
-		}/*,
+		},
 
 		{
 
@@ -168,7 +168,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				}
 			}
 
-		}*/
+		}
 
 	]
 

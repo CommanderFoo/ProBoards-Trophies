@@ -84,7 +84,7 @@ $.extend(trophies, {
 		show_in_mini_profile: true,
 		show_on_members_list: false,
 
-		show_id: false
+		show_details: false
 
 	},
 
@@ -147,6 +147,13 @@ $.extend(trophies, {
 		if(yootil.location.profile()){
 			this.create_tab();
 		}
+
+		$(".trophies-tiptip").tipTip({
+
+			defaultPosition: "right",
+			maxWidth: "auto"
+
+		});
 	},
 
 	/**
@@ -175,7 +182,7 @@ $.extend(trophies, {
 			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
 			this.settings.show_on_profile = (!! ~~ settings.show_on_profile)? true : false;
 			this.settings.show_on_members_list = (!! ~~ settings.show_on_members_list)? true : false;
-			this.settings.show_id = (!! ~~ settings.show_id)? true : false;
+			this.settings.show_details = (!! ~~ settings.show_details)? true : false;
 		}
 	},
 

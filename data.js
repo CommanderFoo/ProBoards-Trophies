@@ -189,15 +189,27 @@ trophies.Data = (function(){
 				return null;
 			},
 
-			trophy: function(trophy, local){
-				if(self.trophy.exists(trophy, local)){
-					var pack_info = trophies.utils.get.pack(trophy.pack);
+			trophy: function(trophy, local, anywhere){
+				var pack_info = trophies.utils.get.pack(trophy.pack);
 
-					if(pack_info){
-						var where = (local) ? self.trophy_local_data : self.trophy_data;
+				if(pack_info){
+					if(anywhere){
+						if(self.trophy.exists(trophy)){
+							if(self.trophy_data[pack_info.pack] && self.trophy_data[pack_info.pack][pack_info.trophies_key] && self.trophy_data[pack_info.pack][pack_info.trophies_key][trophy.id]){
+								return self.trophy_data[pack_info.pack][pack_info.trophies_key][trophy.id];
+							}
+						} else if(self.trophy.exists(trophy, true)){
+							if(self.trophy_local_data[pack_info.pack] && self.trophy_local_data[pack_info.pack][pack_info.trophies_key] && self.trophy_local_data[pack_info.pack][pack_info.trophies_key][trophy.id]){
+								return self.trophy_local_data[pack_info.pack][pack_info.trophies_key][trophy.id];
+							}
+						}
+					} else {
+						if(self.trophy.exists(trophy, local)){
+							var where = (local)? self.trophy_local_data : self.trophy_data;
 
-						if(where[pack_info.pack] && where[pack_info.pack][pack_info.trophies_key] && where[pack_info.pack][pack_info.trophies_key][trophy.id]){
-							return where[pack_info.pack][pack_info.trophies_key][trophy.id];
+							if(where[pack_info.pack] && where[pack_info.pack][pack_info.trophies_key] && where[pack_info.pack][pack_info.trophies_key][trophy.id]){
+								return where[pack_info.pack][pack_info.trophies_key][trophy.id];
+							}
 						}
 					}
 				}
