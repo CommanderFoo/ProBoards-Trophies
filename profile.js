@@ -47,16 +47,48 @@ $.extend(trophies, {
 		tabs_html += '<li title="All trophies" class="ui-active trophies-tiptip" id="trophy_pack_tab__all__"><a href="#">All</a></li>';
 
 		for(var index in this.packs){
-			var pack = this.utils.get.pack(this.packs[index]);
+			var pack_info= this.utils.get.pack(this.packs[index]);
 
-			if(pack){
-				tabs_html += '<li title="' + yootil.html_encode(pack.desc) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack.plugin_id) + '"><a href="#">' + yootil.html_encode(pack.name) + '</a></li>';
+			if(pack_info){
+				tabs_html += '<li title="' + yootil.html_encode(pack_info.pack) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
 			}
 		}
 
 		tabs_html += "</ul><br style='clear: both' /></div>";
 
-		$(tabs_html).appendTo($("form.form_user_status").parent());
+		tabs_html = $(tabs_html);
+
+		tabs_html.find("a").click(function(){
+			trophies.switch_trophy_pack_list($(this).parent());
+			return false;
+		});
+
+		tabs_html.appendTo($("form.form_user_status").parent());
+	},
+
+	switch_trophy_pack_list: function(li){
+		var pack_id = li.attr("id").split("trophy_pack_tab_")[1];
+		var all_lis = li.parent().children();
+
+		// remove active class
+
+		all_lis.each(function(){
+			$(this).removeClass("ui-active");
+		});
+
+		// Now add it to the one clicked.
+
+		li.addClass("ui-active");
+
+		// If the pack id is __all__, then show all trophies in the list.
+
+		if(pack_id == "_all__"){
+			$("div.trophy-list-trophy").show();
+		} else {
+			$("div.trophy-list-trophy[data-pack=" + pack_id + "]").show();
+			$("div.trophy-list-trophy:not([data-pack=" + pack_id + "])").hide();
+		}
+
 	},
 
 	build_trophy_list: function(){
@@ -127,11 +159,13 @@ $.extend(trophies, {
 				title = "Trophy Not Earned";
 			}
 
-			if(this.settings.show_details){
+			// Details for staff
+
+			if(yootil.user.is_staff() && this.settings.show_details){
 				title += "<br />Trophy Pack: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
 			}
 
-			trophy_list += "<div class='trophy-list-trophy" + first + opacity + "'>";
+			trophy_list += "<div class='trophy-list-trophy" + opacity + "' data-pack='" + yootil.html_encode(list[trophy].pack) + "'>";
 			trophy_list += "<div class='trophy-list-trophy-img'><img class='trophies-tiptip' title='" + title + "' src='" + trophy_img + "' /></div>";
 			trophy_list += "<div class='trophy-list-trophy-title-desc'>";
 			trophy_list += "<div class='trophy-list-trophy-title'><span class='trophy-list-trophy-title-cup'>" + small_cup_img + "</span> <strong>" + yootil.html_encode(list[trophy].title) + "</strong></div>";
@@ -143,6 +177,8 @@ $.extend(trophies, {
 			counter ++;
 		}
 
+		// If there are no trophies, then show something.
+
 		if(!trophy_list.length){
 			var to_user = (yootil.user.id() == yootil.page.member.id())? "You have" : (yootil.page.member.name() + " has");
 
@@ -151,6 +187,8 @@ $.extend(trophies, {
 
 		return trophy_list;
 	},
+
+	// This appears on the trophy page and the profile page
 
 	create_trophy_stats: function(){
 		var data = this.data(yootil.page.member.id());
