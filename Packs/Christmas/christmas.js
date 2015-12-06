@@ -26,10 +26,9 @@ TROPHY_REGISTER["trophies_xmas_pack"] = {
 			description: "You were on the forum on Christmas Eve",
 			disabled: false,
 			callback: function(trophy){
-				var now = new Date();
+				var now = new Date(proboards.dataHash.serverDate);
 
-				//DEBUGGING
-				if((now.getMonth() + 1) == 12 && now.getDate() < 24){
+				if((now.getMonth() + 1) == 12 && now.getDate() == 24){
 					this.show_notification(trophy, false, false);
 				}
 			}
@@ -45,7 +44,7 @@ TROPHY_REGISTER["trophies_xmas_pack"] = {
 			description: "You were on the forum on Christmas Day",
 			disabled: false,
 			callback: function(trophy){
-				var now = new Date();
+				var now = new Date(proboards.dataHash.serverDate);
 
 				if((now.getMonth() + 1) == 12 && now.getDate() == 25){
 					this.show_notification(trophy, false, false);

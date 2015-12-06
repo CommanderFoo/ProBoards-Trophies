@@ -39,6 +39,17 @@ trophies.Data = (function(){
 
 		var self = this;
 
+		this.sync_to_keys = function(just_do_it){
+
+			// Update all pack keys with the data and trophies
+
+			console.log("Yarrr");
+
+			if(just_do_it){
+				// perform key update
+			}
+		};
+
 		this.add = {
 
 			pack_data: function(pack, data){

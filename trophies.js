@@ -248,8 +248,7 @@ $.extend(trophies, {
 
 			if(the_form.length == 1){
 				the_form.bind("submit", $.proxy(function(){
-					//this.data(yootil.user.id()).clear.synced();
-					//this.data(yootil.user.id()).save_to_keys(this.KEY, this.packs);
+					this.data(yootil.user.id()).sync_to_keys();
 				}, this));
 			}
 		}
