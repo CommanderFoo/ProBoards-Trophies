@@ -138,8 +138,8 @@ $.extend(trophies, {
 							html += "<div class='trophy-cell'><h4>Progress</h4><span class='trophies-tiptip' title='Progress of current level'>" + data.get.stat.level_percentage() + "%</span></div>";
 							html += "<div class='trophy-cell'><h4>Trophies</h4><span class='trophies-tiptip' title='Total trophies earned'>" + data.get.stat.total_trophies() + "</span></div>";
 							html += "<div class='trophy-cell'><h4>Bronze</h4><span class='trophies-tiptip' title='Total bronze trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.bronze + "' /></span></div>";
-							html += "<div class='trophy-cell'><h4>Silver</h4><span class='trophies-tiptip' title='Total silver trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.silver + "' /></span></div>";
-							html += "<div class='trophy-cell'><h4>Gold</h4><span class='trophies-tiptip' title='Total gold trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.gold + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Silver</h4><span class='trophies-tiptip' title='Total silver trophies earned'>" + data.get.stat.cups.silver() + "<img src='" + this.images.silver + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Gold</h4><span class='trophies-tiptip' title='Total gold trophies earned'>" + data.get.stat.cups.gold() + "<img src='" + this.images.gold + "' /></span></div>";
 						html += "</div>";
 					html += "</div>";
 				html += "</div>";
