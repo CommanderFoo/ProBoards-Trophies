@@ -4,6 +4,9 @@ if(typeof TROPHY_REGISTER == "undefined"){
 
 TROPHY_REGISTER["pixeldepth_trophies"] = {
 
+	name: "Core",
+	desc: "Default trophies that come with the plugin",
+
 	plugin_id: "pixeldepth_trophies",
 	plugin_key: "pixeldepth_trophies",
 

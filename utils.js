@@ -13,34 +13,6 @@ trophies.utils = {
 	},
 
 	/**
-	 * MOVE TO YOOTIL
-	 * Checks a number and returns the correct suffix to be used with it.
-	 *
-	 *     trophies.get_suffix(3); // "rd"
-	 *
-	 * @param {Number} n The number to be checked.
-	 * @return {String}
-	 */
-
-	get_suffix: function(n){
-		var j = (n % 10);
-
-		if(j == 1 && n != 11){
-			return "st";
-		}
-
-		if(j == 2 && n != 12){
-			return "nd";
-		}
-
-		if(j == 3 && n != 13) {
-			return "rd";
-		}
-
-		return "th";
-	},
-
-	/**
 	 * Checks the data type to make sure it's correct.  The reason for this is because ProBoards
 	 * never used to JSON stringify values, so we check to make sure it's not double stringified.
 	 *

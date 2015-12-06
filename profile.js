@@ -8,7 +8,6 @@ $.extend(trophies, {
 			this.data(yootil.page.member.id() || yootil.user.id()).calculate_stats();
 
 			var trophy_stats = yootil.create.profile_content_box();
-			var trophy_list = yootil.create.profile_content_box();
 			var stats_html = (this.settings.show_on_profile)? this.create_trophy_stats() : "";
 
 			if(stats_html.length){
@@ -25,11 +24,39 @@ $.extend(trophies, {
 				}
 			} else {
 				trophy_stats.appendTo($("form.form_user_status").parent());
+
+				var trophy_list = yootil.create.profile_content_box();
+
+				if(this.packs.length > 1){
+					this.create_pack_tabs();
+					trophy_list.addClass("trophies-content-box-list")
+				}
+
 				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
 			}
 
 			yootil.create.profile_tab("Trophies", "trophies", active);
 		}
+	},
+
+	create_pack_tabs: function(){
+		var tabs_html = '<div class="trophies-pack-tabs ui-tabMenu"><ul class="ui-helper-clearfix">';
+
+		// Add an "All" tab and make it the first active one
+
+		tabs_html += '<li title="All trophies" class="ui-active trophies-tiptip" id="trophy_pack_tab__all__"><a href="#">All</a></li>';
+
+		for(var index in this.packs){
+			var pack = this.utils.get.pack(this.packs[index]);
+
+			if(pack){
+				tabs_html += '<li title="' + yootil.html_encode(pack.desc) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack.plugin_id) + '"><a href="#">' + yootil.html_encode(pack.name) + '</a></li>';
+			}
+		}
+
+		tabs_html += "</ul><br style='clear: both' /></div>";
+
+		$(tabs_html).appendTo($("form.form_user_status").parent());
 	},
 
 	build_trophy_list: function(){
@@ -79,14 +106,14 @@ $.extend(trophies, {
 			if(user_trophy && user_trophy.t && has_earned){
 				var date = new Date(user_trophy.t);
 				var day = date.getDate() || 1;
-				var month = this.months[date.getMonth()];
+				var month = yootil.month(date.getMonth(), true);
 				var year = date.getFullYear();
 				var hours = date.getHours();
 				var mins = date.getMinutes();
 				var am_pm = "";
 
 				mins = (mins < 10)? "0" + mins : mins;
-				date_str = "Earned on " + day + this.utils.get_suffix(day) + " of " + month + ", " + year;
+				date_str = "Earned on " + day + yootil.suffix(day) + " of " + month + ", " + year;
 
 				if(!time_24){
 					am_pm = (hours > 11)? "pm" : "am";

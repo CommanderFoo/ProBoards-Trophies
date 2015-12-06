@@ -26,7 +26,7 @@ $.extend(trophies, {
 	 * @property {String} required_yootil_version
 	 */
 
-	required_yootil_version: "1.0.0",
+	required_yootil_version: "1.1.0",
 
 	/**
 	 * This holds a reference to the plugin object returned by ProBoards.
@@ -99,18 +99,6 @@ $.extend(trophies, {
 	 */
 
 	banned_groups: [],
-
-	/**
-	 * @property {Array} months An array of months used throughout the plugin and it's modules.
-	 */
-
-	months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"],
-
-	/**
-	 * @property {Array} days An array of days used throughout the plugin and it's modules.
-	 */
-
-	days: ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"],
 
 	/**
 	 * @property {Object} queue Yootil queue instance.

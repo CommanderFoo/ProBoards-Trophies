@@ -4,13 +4,22 @@ if(typeof TROPHY_REGISTER == "undefined"){
 
 TROPHY_REGISTER["trophies_xmas_pack"] = {
 
+	name: "Christmas Pack",
+	desc: "Christmas trophy pack",
+
+	plugin_id: "trophy_xmas_pack",
+	plugin_key: "trophies_xmas_pack",
+
+	trophies_key: "t",
+	trophies_data_key: "d",
+
 	key: "trophies_xmas_pack",
 
 	"trophies": [
 
 		{
 
-			id: "xmas1",
+			id: 1,
 			cup: "silver",
 			title: "Was here on Christmas Eve",
 			image: "here_xmas_eve",
@@ -28,7 +37,7 @@ TROPHY_REGISTER["trophies_xmas_pack"] = {
 
 		{
 
-			id: "xmas2",
+			id: 2,
 			cup: "gold",
 			title: "Was here on Christmas Day",
 			image: "here_xmas_day",

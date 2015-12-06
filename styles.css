@@ -199,3 +199,17 @@ div.trophy-list-trophy-not-earned {
 	opacity: 0.3;	
 
 }
+
+div.trophies-content-box-list {
+
+	border-radius: 10px 0px 10px 10px;
+
+}
+
+div.trophies-pack-tabs > ul {
+
+	border-radius: 10px 10px 0px 0px;
+	float: right;
+	padding-left: 8px;
+
+}
