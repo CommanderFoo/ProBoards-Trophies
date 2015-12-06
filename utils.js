@@ -29,10 +29,14 @@ trophies.utils = {
 	},
 
 	fetch_image: function(trophy){
-		var plugin = proboards.plugin.get(trophy.pack);
+		var pack_info = this.get.pack(trophy.pack);
 
-		if(plugin && plugin.images && plugin.images[trophy.image]){
-			return plugin.images[trophy.image];
+		if(pack_info){
+			var plugin = proboards.plugin.get(pack_info.plugin_id);
+
+			if(plugin && plugin.images && plugin.images[trophy.image]){
+				return plugin.images[trophy.image];
+			}
 		}
 
 		return trophies.images.missing;

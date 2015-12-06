@@ -28,7 +28,8 @@ TROPHY_REGISTER["trophies_xmas_pack"] = {
 			callback: function(trophy){
 				var now = new Date();
 
-				if((now.getMonth() + 1) == 12 && now.getDate() == 24){
+				//DEBUGGING
+				if((now.getMonth() + 1) == 12 && now.getDate() < 24){
 					this.show_notification(trophy, false, false);
 				}
 			}
