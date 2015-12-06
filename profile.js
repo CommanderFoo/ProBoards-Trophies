@@ -129,30 +129,42 @@ $.extend(trophies, {
 		var data = this.data(yootil.page.member.id());
 		var html = "";
 
-		html += "<div class='trophy-stats-wrapper'>";
-		html += "<div class='trophy-stats'>";
-
-		html += "<div class='trophy-stats-big-cup' style='background-image: url(" + this.images.trophy_level + ");'>Level<br /><span>" +  data.get.stat.current_level() + "</span></div>";
-		html += "<div class='trophy-stats-level'><strong><span>" + data.get.stat.current_level() + "</span></strong></div>";
-		html += "<div class='trophy-stats-progress'><div class='trophy-stats-percent-bar-wrapper'><div class='trophy-stats-percent-bar trophies-tiptip' title='Current level progress' style='width: " + data.get.stat.level_percentage() + "%;'> </div></div></div>";
-		html += "<div class='trophy-stats-next-level'><strong><span>" + data.get.stat.next_level() + "</span></strong></div>";
-		html += "<div class='trophy-stats-misc'> </div>";
-		html += "<div class='trophy-stats-total-trophies'><strong>Trophies<br /><span>" + data.get.stat.total_trophies() + "</span></strong></div>";
-
-		// Cups
-
-		html += "<div class='trophy-stats-total-cups'><ul>";
-		html += "<li class='trophy-stats-cup-bronze-img' title='Bronze'><img class='trophies-tiptip' title='Bronze' src='" + this.images.bronze + "' /></li>";
-		html += "<li class='trophy-stats-cup-bronze-total'>" + data.get.stat.cups.bronze() + "</li>";
-		html += "<li class='trophy-stats-cup-spacer'> </li>";
-		html += "<li class='trophy-stats-cup-silver-img'><img class='trophies-tiptip' title='Silver' src='" + this.images.silver + "' /></li>";
-		html += "<li class='trophy-stats-cup-silver-total'>" + data.get.stat.cups.silver() + "</li>";
-		html += "<li class='trophy-stats-cup-spacer'> </li>";
-		html += "<li class='trophy-stats-cup-gold-img'><img class='trophies-tiptip' title='Gold' src='" + this.images.gold + "' /></li>";
-		html += "<li class='trophy-stats-cup-gold-total'>" + data.get.stat.cups.gold() + "</li>";
-		html += "</ul></div>";
-
-		html += "</div></div>";
+		html += "<div class='trophy-table'>";
+			html += "<div class='trophy-row'>";
+				html += "<div class='trophy-cell'>";
+					html += "<div class='trophy-table'>";
+						html += "<div class='trophy-row trophy-stats'>";
+							html += "<div class='trophy-cell'><h4>Level</h4><span class='trophies-tiptip' title='Current level'>" + data.get.stat.current_level() + "</span></div>";
+							html += "<div class='trophy-cell'><h4>Progress</h4><span class='trophies-tiptip' title='Progress of current level'>" + data.get.stat.level_percentage() + "%</span></div>";
+							html += "<div class='trophy-cell'><h4>Trophies</h4><span class='trophies-tiptip' title='Total trophies earned'>" + data.get.stat.total_trophies() + "</span></div>";
+							html += "<div class='trophy-cell'><h4>Bronze</h4><span class='trophies-tiptip' title='Total bronze trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.bronze + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Silver</h4><span class='trophies-tiptip' title='Total silver trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.silver + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Gold</h4><span class='trophies-tiptip' title='Total gold trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.gold + "' /></span></div>";
+						html += "</div>";
+					html += "</div>";
+				html += "</div>";
+			html += "</div>";
+			html += "<div class='trophy-row'>";
+				html += "<div class='trophy-cell'>";
+					html += "<div class='trophy-table'>";
+						html += "<div class='trophy-row'>";
+							html += "<div class='trophy-cell'> &nbsp; </div>";
+							html += "<div class='trophy-cell'>";
+								html += "<div class='trophy-stats-level-info'>";
+									html += "<div class='trophy-stats-current-level'>Level " + data.get.stat.current_level() + "</div>";
+									html += "<div class='trophy-stats-next-level'>Next " + data.get.stat.next_level() + "</div>";
+									html += "<br style='clear: both' />";
+								html += "</div>";
+								html += "<div class='trophy-stats-progress-bar'>";
+									html += "<div class='trophy-stats-progress-highlight' style='width: " + data.get.stat.level_percentage() + "%;'>&nbsp;</div>";
+								html += "</div>";
+							html += "</div>";
+							html += "<div class='trophy-cell'> &nbsp; </div>";
+						html += "</div>";
+					html += "</div>";
+				html += "</div>";
+			html += "</div>";
+		html += "</div>";
 
 		return html;
 	}
