@@ -50,7 +50,7 @@ $.extend(trophies, {
 			var pack_info= this.utils.get.pack(this.packs[index]);
 
 			if(pack_info){
-				tabs_html += '<li title="' + yootil.html_encode(pack_info.pack) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
+				tabs_html += '<li title="' + yootil.html_encode(pack_info.desc) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
 			}
 		}
 

@@ -179,7 +179,7 @@ $.extend(trophies, {
 			for(var p in TROPHY_REGISTER){
 				var the_pack = p;
 
-				if(typeof TROPHY_REGISTER[the_pack].trophies != "undefined" && TROPHY_REGISTER[the_pack].trophies.constructor == Array && TROPHY_REGISTER[the_pack].trophies.length){
+				if(typeof TROPHY_REGISTER[the_pack].trophies != "undefined" && TROPHY_REGISTER[the_pack].trophies.constructor == Array && TROPHY_REGISTER[the_pack].trophies.length && typeof TROPHY_REGISTER[the_pack].name != "undefined"){
 					this.packs.push(the_pack);
 
 					TROPHY_REGISTER[the_pack].pack = the_pack;
@@ -199,6 +199,10 @@ $.extend(trophies, {
 
 					if(!TROPHY_REGISTER[the_pack].trophies_data_key){
 						TROPHY_REGISTER[the_pack].trophies_data_key = false;
+					}
+
+					if(!TROPHY_REGISTER[the_pack].desc){
+						TROPHY_REGISTER[the_pack].desc = TROPHY_REGISTER[the_pack].name;
 					}
 
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
