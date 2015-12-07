@@ -62,7 +62,7 @@ $.extend(trophies, {
 
 						};
 
-						if(this.utils.trophy.exists(the_trophy) && !this.data(yootil.user.id()).trophy.seen(the_trophy)){
+						if(this.utils.trophy.exists(the_trophy) && this.data(yootil.user.id()).trophy.exists(the_trophy, true) && !this.data(yootil.user.id()).trophy.seen(the_trophy)){
 							this.show_notification(this.lookup[pack_info.pack][trophy]);
 						}
 					}
@@ -70,31 +70,6 @@ $.extend(trophies, {
 			}
 		}
 
-		/*
-		con
-		//unseen_trophies = this.sort_unseen_trophies(trophies);
-
-		for(var t in unseen_trophies){
-			if(!this.utils.trophy.exists(t)){
-				this.data(yootil.user.id()).remove.trophy(t, true);
-			} else if(!unseen_trophies[t].s){
-				this.show_notification(this.list[t]);
-			}
-		}*/
 	}
-
-	/*sort_unseen_trophies: function(trophies){
-		 var sorted_trophies = [];
-
-		 for(var t in trophies){
-			 sorted_trophies.push({key: t, value: trophies[t]})
-		 }
-
-		 sorted_trophies.sort(function(a, b){
-		 	return a.key - b.key;
-		 });
-
-		 return sorted_trophies;
-	 },*/
 
 });

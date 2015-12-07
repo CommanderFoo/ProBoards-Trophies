@@ -52,6 +52,27 @@ trophies.utils = {
 			return null;
 		},
 
+		trophy: function(pack, id){
+			if(trophies.utils.pack.exists(pack)){
+				var pack_info = trophies.utils.get.pack(pack);
+
+				if(pack_info){
+					var the_trophy = {
+
+						id: id,
+						pack: pack
+
+					};
+
+					if(trophies.utils.trophy.exists(the_trophy)){
+						return trophies.lookup[pack_info.pack][id];
+					}
+				}
+			}
+
+			return false;
+		},
+
 		trophies: function(user, sort){
 			var list = [];
 			var user_trophies = trophies.data(user).get.trophies();
@@ -81,9 +102,7 @@ trophies.utils = {
 			}
 
 			if(sort){
-				list.sort(function(a, b){
-					return a.title - b.title;
-				});
+				list.sort(trophies.utils.sorting_func);
 			}
 
 			return list;
@@ -109,9 +128,7 @@ trophies.utils = {
 			}
 
 			if(sort){
-				all_trophies.sort(function(a, b){
-					return a.title - b.title;
-				});
+				all_trophies.sort(trophies.utils.sorting_func);
 			}
 
 			return all_trophies;
@@ -129,6 +146,40 @@ trophies.utils = {
 			return false;
 		}
 
+	},
+
+	// A mess to be honest, it's a bit of a pain sorting them.
+	// I've rewrote this too many times now, however I think this one
+	// works a little better.
+
+	// Basically I get the first 4 characters and the first number in the string
+	// I attempt to order based on the number first.
+
+	// a_str and b_str are made up of the 4 chars + the number for the final check.
+
+	sorting_func: function(a, b) {
+		var _a = a.title.substr(0, 4).replace(/[^\w]/g, "");
+		var _b = b.title.substr(0, 4).replace(/[^\w]/g, "");
+		var _a_num = ~~ ((a.title.match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
+		var _b_num = ~~ ((b.title.match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
+		var a_str = _a + _a_num;
+		var b_str = _b + _b_num;
+
+		if(_a_num && _b_num){
+			if(_a_num > _b_num){
+				return 1;
+			} else if(_a_num < _b_num){
+				return -1;
+			}
+		}
+
+		if(a_str > b_str){
+			return 1;
+		} else if(a_str < b_str){
+			return -1;
+		}
+
+		return 0;
 	}
 
 };

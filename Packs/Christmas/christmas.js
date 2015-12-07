@@ -13,8 +13,6 @@ TROPHY_REGISTER["trophies_xmas_pack"] = {
 	trophies_key: "t",
 	trophies_data_key: "d",
 
-	key: "trophies_xmas_pack",
-
 	"trophies": [
 
 		{

@@ -40,14 +40,17 @@ $.extend(trophies, {
 	},
 
 	create_pack_tabs: function(){
+		var the_packs = this.packs;
 		var tabs_html = '<div class="trophies-pack-tabs ui-tabMenu"><ul class="ui-helper-clearfix">';
 
 		// Add an "All" tab and make it the first active one
 
 		tabs_html += '<li title="All trophies" class="ui-active trophies-tiptip" id="trophy_pack_tab__all__"><a href="#">All</a></li>';
 
-		for(var index in this.packs){
-			var pack_info= this.utils.get.pack(this.packs[index]);
+		the_packs.sort();
+
+		for(var index in the_packs){
+			var pack_info= this.utils.get.pack(the_packs[index]);
 
 			if(pack_info){
 				tabs_html += '<li title="' + yootil.html_encode(pack_info.desc) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
@@ -96,7 +99,7 @@ $.extend(trophies, {
 		var counter = 0;
 		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
 		var the_user = yootil.page.member.id() || yootil.user.id();
-		var list = this.utils.get.all_trophies(the_user);
+		var list = this.utils.get.all_trophies(the_user, true);
 
 		for(var trophy in list){
 			if(trophy.disabled){
@@ -131,7 +134,6 @@ $.extend(trophies, {
 
 			var date_str = "";
 			var user_trophy = this.data(the_user).get.trophy(list[trophy], false, true);
-			var title = "";
 			var big_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_big) + "' title='" + alt + "' alt='" + alt + "' />";
 			var small_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_small) + "' title='" + alt + "' alt='" + alt + "' />";
 
@@ -154,15 +156,14 @@ $.extend(trophies, {
 				}
 
 				date_str += ", at " + hours + ":" + mins + am_pm;
-				title = "Trophy Earned";
-			} else {
-				title = "Trophy Not Earned";
 			}
 
 			// Details for staff
 
+			var title = "";
+
 			if(yootil.user.is_staff() && this.settings.show_details){
-				title += "<br />Trophy Pack: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
+				title = "Trophy Pack Name: " + list[trophy].pack_name + "<br />Trophy Pack ID: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
 			}
 
 			trophy_list += "<div class='trophy-list-trophy" + opacity + "' data-pack='" + yootil.html_encode(list[trophy].pack) + "'>";

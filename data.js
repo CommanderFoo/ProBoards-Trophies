@@ -39,15 +39,85 @@ trophies.Data = (function(){
 
 		var self = this;
 
-		this.sync_to_keys = function(just_do_it){
+		this.sync_to_keys = function(skip_key_update, callbacks){
 
 			// Update all pack keys with the data and trophies
 
-			console.log("Yarrr");
+			if(trophies.packs.length){
+				for(var pack in trophies.packs){
+					var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
 
-			if(just_do_it){
-				// perform key update
+					if(pack_info){
+
+						// First we need to move local trophies to the key
+
+						var _local_data = self.get.local_pack_trophies(pack_info.pack);
+
+						if(_local_data){
+							for(var trophy_id in _local_data){
+								var the_trophy = trophies.utils.get.trophy(pack_info.pack, trophy_id);
+
+								if(the_trophy){
+
+									// Add to key data
+
+									self.add.trophy(the_trophy, true);
+
+									// Now we need to remove the trophy from local if
+									// it has been seen.
+
+									if(_local_data[trophy_id].s){
+										self.remove.trophy(the_trophy, true);
+									}
+								}
+							}
+
+							// Now update local storage
+
+							if(pack_info.plugin_key){
+								yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+							}
+						}
+
+						// Now we need to do key updates
+
+						if(!skip_key_update){
+
+							// Check if we have space, otherwise let the user know and then bail out
+
+							if(!yootil.key.has_space(pack_info.plugin_key)){
+								this.error = "Data length has gone over it's limit of " + yootil.forum.plugin_max_key_length();
+
+								pb.window.dialog("data_limit", {
+
+									title: "Key Data Limit Reached",
+									modal: true,
+									height: 200,
+									width: 350,
+									resizable: false,
+									draggable: false,
+									html: "Unfortunately we can not save anymore data in the key.<br /><br />Plugin: Trophies - [" + pack_info.plugin_key + "]",
+
+									buttons: {
+
+										Close: function () {
+											$(this).dialog("close");
+										}
+
+									}
+
+								});
+
+								return;
+							}
+
+							yootil.key.set(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, callbacks);
+						}
+					}
+				}
 			}
+
+
 		};
 
 		this.add = {
@@ -69,7 +139,7 @@ trophies.Data = (function(){
 
 						if(data){
 							self.pack.create(pack_info.pack);
-							self.trophy_data[pack_info.pack][trophies_key][trophy.id] = yootil.timestamp();
+							self.trophy_data[pack_info.pack][trophies_key][trophy.id] = trophy.t || yootil.timestamp();
 						}
 
 						if(local){
@@ -79,7 +149,7 @@ trophies.Data = (function(){
 								self.trophy_local_data[trophy.pack][trophies_key][trophy.id] = {
 
 										s: 0,
-										t: yootil.timestamp()
+										t: trophy.t || yootil.timestamp()
 
 								};
 
@@ -383,8 +453,34 @@ trophies.Data = (function(){
 					if(self.trophy.exists(trophy, local)){
 						if(local && self.trophy_local_data[trophy.pack] && self.trophy_local_data[trophy.pack][pack_info.trophies_key]){
 							delete self.trophy_local_data[trophy.pack][pack_info.trophies_key][trophy.id];
+
 						} else if(self.trophy_data[trophy.pack] && self.trophy_data[trophy.pack][pack_info.trophies_key]){
 							delete self.trophy_data[trophy.pack][pack_info.trophies_key][trophy.id];
+						}
+					}
+				}
+			}
+
+		};
+
+		this.clear = {
+
+			everything: function(skip_key_update, callbacks){
+				for(var pack in trophies.packs){
+					var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
+
+					if(pack_info){
+						if(pack_info.plugin_key){
+							yootil.storage.remove(pack_info.plugin_key);
+
+							self.trophy_data = {};
+							self.trophy_local_data = {};
+							self.trophy_merged_data = {};
+							self.user_trophies = {};
+
+							if(!skip_key_update){
+								yootil.key.set(pack_info.plugin_key, {}, this.user_id, callbacks);
+							}
 						}
 					}
 				}

@@ -207,7 +207,10 @@ $.extend(trophies, {
 
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
 						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
+
 						the_trophy.pack = the_pack;
+						the_trophy.pack_name = TROPHY_REGISTER[the_pack].name;
+
 						this.register_trophy(the_trophy);
 					}
 				}
@@ -327,6 +330,14 @@ $.extend(trophies, {
 
 		if(!user_data){
 			user_data = new this.Data(user_id);
+
+			// Create pack objects
+
+			for(var pack in this.packs){
+				user_data.pack.create(this.packs[pack]);
+				user_data.pack.create(this.packs[pack], true);
+			}
+
 			this.user_data_table[user_id] = user_data;
 		}
 
