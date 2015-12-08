@@ -17,25 +17,30 @@ $.extend(trophies, {
 			}
 
 			if(!active){
+				var quick_list = null;
+
 				if(this.settings.show_trophies_on_profile){
-					var quick_list = yootil.create.profile_content_box();
 					var quick_list_html = this.build_quick_trophy_list();
+					var trophy_quick_list = yootil.create.profile_content_box();
 
 					if(quick_list_html.length){
-						quick_list.html(quick_list_html);
+						quick_list = trophy_quick_list;
+						trophy_quick_list.html(quick_list_html);
 
 						if(yootil.user.id() == yootil.page.member.id()){
-							quick_list.insertAfter(first_box);
+							trophy_quick_list.insertAfter(first_box);
 						} else {
-							quick_list.insertBefore(first_box);
+							trophy_quick_list.insertBefore(first_box);
 						}
 					}
 				}
 
 				if(stats_html){
-					if(yootil.user.id() == yootil.page.member.id()){
+					if(quick_list){
+						trophy_stats.insertBefore(quick_list);
+					} else if(yootil.user.id() == yootil.page.member.id()){
 						trophy_stats.insertAfter(first_box);
-					} else{
+					} else {
 						trophy_stats.insertBefore(first_box);
 					}
 				}
@@ -83,7 +88,7 @@ $.extend(trophies, {
 
 			width: trophies.data(the_user).get.stat.level_percentage() + "%"
 
-		}, ((active)? 3000 : 6500), $.easeOutCirc, function(){
+		}, ((active)? this.settings.stats_animation_speed_page : this.settings.stats_animation_speed_profile), $.easeOutCirc, function(){
 			clearInterval(interval);
 
 			spans.each(function(){
@@ -260,7 +265,7 @@ $.extend(trophies, {
 	// This appears on the trophy page and the profile page
 
 	create_trophy_stats: function(){
-		var data = this.data(yootil.page.member.id());
+		var data = this.data(yootil.page.member.id() || yootil.user.id());
 		var html = "";
 
 		html += "<div class='trophy-table'>";

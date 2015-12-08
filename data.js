@@ -26,6 +26,7 @@ trophies.Data = (function(){
 			current_level: 1,
 			next_level: 2,
 			level_percentage: 0,
+			maxed: false,
 
 			cups: {
 
@@ -312,6 +313,10 @@ trophies.Data = (function(){
 					return self.stats.total_points;
 				},
 
+				total_xp: function(){
+					return self.stats.total_points;
+				},
+
 				current_level: function(){
 					return self.stats.current_level;
 				},
@@ -322,6 +327,10 @@ trophies.Data = (function(){
 
 				level_percentage: function(){
 					return self.stats.level_percentage;
+				},
+
+				maxed: function(){
+					return this.stats.maxed;
 				},
 
 				cups: {
@@ -593,17 +602,17 @@ trophies.Data = (function(){
 					switch(lookup_trophy.cup){
 
 						case "bronze" :
-							this.stats.total_points += 30;
+							this.stats.total_points += trophies.settings.bronze_xp;
 							this.stats.cups.bronze ++;
 							break;
 
 						case "silver" :
-							this.stats.total_points += 60;
+							this.stats.total_points += trophies.settings.silver_xp;
 							this.stats.cups.silver ++;
 							break;
 
 						case "gold" :
-							this.stats.total_points += 120;
+							this.stats.total_points += trophies.settings.gold_xp;
 							this.stats.cups.gold ++;
 							break;
 
@@ -612,24 +621,36 @@ trophies.Data = (function(){
 			}
 
 			if(this.stats.total_points > 0){
-				for(var level in trophies.levels){
-					if(this.stats.total_points >= trophies.levels[level] && this.stats.total_points < trophies.levels[(parseInt(level) + 1).toString()]){
-						this.stats.current_level = level;
-						this.stats.next_level = (parseInt(level) + 1);
-						break;
+				if(this.stats.total_points > trophies.levels[trophies.levels.length - 1]){
+					this.stats.current_level = trophies.levels.length;
+					this.stats.next_level = this.stats.current_level + 1
+
+					this.stats.maxed = true;
+				} else {
+					for(var i = 0, l = trophies.levels.length; i < l; i ++){
+						if(this.stats.total_points >= trophies.levels[i] && this.stats.total_points < trophies.levels[i + 1]){
+							this.stats.current_level = i + 1;
+							this.stats.next_level = this.stats.current_level + 1;
+							break;
+						}
 					}
 				}
 			}
 
-			var next_level_points = trophies.levels[this.stats.next_level];
-			var points_needed = (next_level_points - this.stats.total_points);
 			var pecent = 0;
 
-			if(next_level_points){
-				percent = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
-			}
+			if(!this.stats.maxed){
+				var next_level_points = trophies.levels[this.stats.next_level - 1];
+				var points_needed = (next_level_points - this.stats.total_points);
 
-			if(percent > 100){
+				if(next_level_points){
+					percent = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
+				}
+
+				if(percent > 100){
+					percent = 100;
+				}
+			} else {
 				percent = 100;
 			}
 

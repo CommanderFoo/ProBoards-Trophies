@@ -89,7 +89,17 @@ $.extend(trophies, {
 		show_date: true,
 		show_time: false,
 
-		show_details: false
+		show_details: false,
+
+		stats_animation_speed_profile: 4000,
+		stats_animation_speed_page: 1500,
+
+		max_level: 99,
+		xp_modifier: 0.10,
+
+		bronze_xp: 5,
+		silver_xp: 15,
+		gold_xp: 40
 
 	},
 
@@ -128,6 +138,7 @@ $.extend(trophies, {
 		this.queue = new yootil.queue();
 
 		this.setup();
+		this.generate_xp_levels();
 		this.register_trophy_pack();
 		this.setup_user_data_table();
 
@@ -183,6 +194,13 @@ $.extend(trophies, {
 			this.settings.show_time = (!! ~~ settings.show_time)? true : false;
 			this.settings.show_trophies_on_profile = (!! ~~ settings.show_trophies_on_profile)? true : false;
 			this.settings.show_pack_tabs = (!! ~~ settings.show_pack_tabs)? true : false;
+
+			this.settings.max_level = ((~~ settings.max_level) > 0)? (~~ settings.max_level) : this.settings.max_level;
+			this.settings.xp_modifier = (Math.abs(parseFloat(settings.xp_modifier)) > 0)? (Math.abs(parseFloat(settings.xp_modifier))) : this.settings.xp_modifier;
+
+			this.settings.bronze_xp = (~~ settings.bronze_xp)? (~~ settings.bronze_xp) : this.settings.bronze_xp;
+			this.settings.silver_xp = (~~ settings.silver_xp)? (~~ settings.silver_xp) : this.settings.silver_xp;
+			this.settings.gold_xp = (~~ settings.gold_xp)? (~~ settings.gold_xp) : this.settings.gold_xp;
 		}
 	},
 
