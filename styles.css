@@ -214,3 +214,11 @@ div.trophies-pack-tabs > ul {
 	padding-left: 8px;
 
 }
+
+td.trophies-members-list-cups img {
+
+	position: relative;
+	top: 2px;
+	margin-right: 3px;
+
+}

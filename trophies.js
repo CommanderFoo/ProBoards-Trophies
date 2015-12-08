@@ -82,7 +82,7 @@ $.extend(trophies, {
 
 		show_stats_on_profile: true,
 		show_in_mini_profile: true,
-		show_on_members_list: true,
+		show_in_members_list: true,
 		show_trophies_on_profile: true,
 		show_pack_tabs: true,
 
@@ -139,6 +139,9 @@ $.extend(trophies, {
 
 		if(yootil.location.profile()){
 			this.create_tab();
+		} else if(this.settings.show_in_members_list && yootil.location.members()){
+			this.show_in_members_list();
+			yootil.ajax.after_search(this.show_in_members_list, this);
 		}
 
 		$(".trophies-tiptip").tipTip({
@@ -174,7 +177,7 @@ $.extend(trophies, {
 
 			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
 			this.settings.show_stats_on_profile = (!! ~~ settings.show_stats_on_profile)? true : false;
-			this.settings.show_on_members_list = (!! ~~ settings.show_on_members_list)? true : false;
+			this.settings.show_in_members_list = (!! ~~ settings.show_in_members_list)? true : false;
 			this.settings.show_details = (!! ~~ settings.show_details)? true : false;
 			this.settings.show_date = (!! ~~ settings.show_date)? true : false;
 			this.settings.show_time = (!! ~~ settings.show_time)? true : false;
@@ -314,6 +317,8 @@ $.extend(trophies, {
 	 */
 
 	setup_user_data_table: function(){
+		this.user_data_table = {};
+
 		for(var pack in this.packs){
 			var pack_data = proboards.plugin.keys.data[this.packs[pack]];
 			var local_data = yootil.storage.get(this.packs[pack], true) || {};
@@ -324,6 +329,14 @@ $.extend(trophies, {
 
 			this.data(yootil.user.id()).add.pack_local_data(this.packs[pack], local_data);
 		}
+	},
+
+	/**
+	 * Refreshes the user data lookup table.
+	 */
+
+	refresh_user_data_table: function(){
+		this.setup_user_data_table();
 	},
 
 	/**
