@@ -186,11 +186,12 @@ $.extend(trophies, {
 			}
 
 			var date_str = "";
-			var user_trophy = this.data(the_user).get.trophy(list[trophy], false, true);
 			var big_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_big) + "' title='" + alt + "' alt='" + alt + "' />";
 			var small_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_small) + "' title='" + alt + "' alt='" + alt + "' />";
 
 			if(has_earned){
+				var user_trophy = this.data(the_user).get.trophy(list[trophy], false, true);
+
 				date_str = this.get_trophy_date_str(user_trophy, time_24);
 			}
 
@@ -229,8 +230,8 @@ $.extend(trophies, {
 		var str = "";
 
 		if(this.settings.show_date){
-			if(user_trophy && user_trophy.t){
-				var date = new Date(user_trophy.t);
+			if(user_trophy){
+				var date = new Date(user_trophy.t || user_trophy);
 				var day = date.getDate() || 1;
 				var month = yootil.month(date.getMonth(), true);
 				var year = date.getFullYear();
