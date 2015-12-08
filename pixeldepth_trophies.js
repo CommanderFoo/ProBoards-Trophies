@@ -10,5 +10,5 @@ pixeldepth.trophies = trophies = (function(){
 })();
 
 $(function(){
-	pixeldepth.trophies.init();
+	trophies.init();
 });

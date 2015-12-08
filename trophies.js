@@ -153,6 +153,13 @@ $.extend(trophies, {
 		} else if(this.settings.show_in_members_list && yootil.location.members()){
 			this.show_in_members_list();
 			yootil.ajax.after_search(this.show_in_members_list, this);
+		} else {
+			var location_check = (yootil.location.search_results() || yootil.location.message_thread() || yootil.location.thread() || yootil.location.recent_posts());
+
+			if(this.settings.show_in_mini_profile && location_check){
+				this.show_in_mini_profile();
+				yootil.ajax.after_search(this.show_in_mini_profile, this);
+			}
 		}
 
 		$(".trophies-tiptip").tipTip({

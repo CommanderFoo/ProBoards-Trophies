@@ -215,10 +215,33 @@ div.trophies-pack-tabs > ul {
 
 }
 
-td.trophies-members-list-cups img {
+td.trophies-members-list-cups img, div.trophies-mini-profile img {
 
 	position: relative;
-	top: 2px;
-	margin-right: 3px;
+	top: 4px;
+
+}
+
+div.trophies-mini-profile {
+
+	margin-top: 5px;
+
+}
+
+th.trophies-members-list-th {
+
+	width: 15%;
+
+}
+
+td.trophies-members-list-cups span, div.trophies-mini-profile span {
+
+	margin-right: 6px;
+
+}
+
+td.trophies-members-list-cups span:last-child, div.trophies-mini-profile span:last-child {
+
+	margin-right: 0px;
 
 }

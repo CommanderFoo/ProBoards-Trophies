@@ -27,6 +27,7 @@ trophies.Data = (function(){
 			next_level: 2,
 			level_percentage: 0,
 			maxed: false,
+			calculated: false,
 
 			cups: {
 
@@ -536,7 +537,11 @@ trophies.Data = (function(){
 
 		};
 
-		this.calculate_stats = function(){
+		this.calculate_stats = function(force_recalculations){
+			if(this.stats.calculated && !force_recalculations){
+				return;
+			}
+
 			for(var pack in this.trophy_data){
 				if(trophies.utils.pack.exists(pack)){
 					var pack_info = trophies.utils.get.pack(pack);
@@ -655,6 +660,7 @@ trophies.Data = (function(){
 			}
 
 			this.stats.level_percentage = percent;
+			this.stats.calculated = true;
 		}
 	}
 
