@@ -106,8 +106,9 @@ div.trophy-stats-progress-bar {
 
 div.trophy-stats-progress-highlight {
 
-	background-color: #3AAEF5;
+	background-color: #3aaef5;
 	height: 10px;
+	box-shadow: 0px 0px 3px 1px #3aaef5;
 
 }
 

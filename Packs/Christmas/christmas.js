@@ -5,7 +5,7 @@ if(typeof TROPHY_REGISTER == "undefined"){
 TROPHY_REGISTER["trophies_xmas_pack"] = {
 
 	name: "Christmas Pack",
-	desc: "Christmas trophy pack",
+	description: "Christmas trophy pack",
 
 	plugin_id: "trophy_xmas_pack",
 	plugin_key: "trophies_xmas_pack",

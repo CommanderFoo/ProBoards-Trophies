@@ -5,7 +5,7 @@ if(typeof TROPHY_REGISTER == "undefined"){
 TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 	name: "Core Pack",
-	desc: "Default trophies that come with the plugin",
+	description: "Default trophies that come with the plugin",
 
 	plugin_id: "pixeldepth_trophies",
 	plugin_key: "pixeldepth_trophies",

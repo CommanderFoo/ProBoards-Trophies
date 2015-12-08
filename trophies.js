@@ -80,9 +80,14 @@ $.extend(trophies, {
 
 		notification_disable: false,
 
-		show_on_profile: true,
+		show_stats_on_profile: true,
 		show_in_mini_profile: true,
-		show_on_members_list: false,
+		show_on_members_list: true,
+		show_trophies_on_profile: true,
+		show_pack_tabs: true,
+
+		show_date: true,
+		show_time: false,
 
 		show_details: false
 
@@ -168,9 +173,13 @@ $.extend(trophies, {
 			this.banned_groups = settings.banned_groups;
 
 			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
-			this.settings.show_on_profile = (!! ~~ settings.show_on_profile)? true : false;
+			this.settings.show_stats_on_profile = (!! ~~ settings.show_stats_on_profile)? true : false;
 			this.settings.show_on_members_list = (!! ~~ settings.show_on_members_list)? true : false;
 			this.settings.show_details = (!! ~~ settings.show_details)? true : false;
+			this.settings.show_date = (!! ~~ settings.show_date)? true : false;
+			this.settings.show_time = (!! ~~ settings.show_time)? true : false;
+			this.settings.show_trophies_on_profile = (!! ~~ settings.show_trophies_on_profile)? true : false;
+			this.settings.show_pack_tabs = (!! ~~ settings.show_pack_tabs)? true : false;
 		}
 	},
 
@@ -201,8 +210,8 @@ $.extend(trophies, {
 						TROPHY_REGISTER[the_pack].trophies_data_key = false;
 					}
 
-					if(!TROPHY_REGISTER[the_pack].desc){
-						TROPHY_REGISTER[the_pack].desc = TROPHY_REGISTER[the_pack].name;
+					if(!TROPHY_REGISTER[the_pack].description){
+						TROPHY_REGISTER[the_pack].description = TROPHY_REGISTER[the_pack].name;
 					}
 
 					for(var t in TROPHY_REGISTER[the_pack].trophies){

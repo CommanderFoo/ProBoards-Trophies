@@ -5,17 +5,34 @@ $.extend(trophies, {
 		var first_box = $("form.form_user_status .content-box:first");
 
 		if(first_box.length){
-			this.data(yootil.page.member.id() || yootil.user.id()).calculate_stats();
+			var the_user = yootil.page.member.id() || yootil.user.id();
+
+			this.data(the_user).calculate_stats();
 
 			var trophy_stats = yootil.create.profile_content_box();
-			var stats_html = (this.settings.show_on_profile)? this.create_trophy_stats() : "";
+			var stats_html = (this.settings.show_stats_on_profile || active)? this.create_trophy_stats() : "";
 
 			if(stats_html.length){
 				trophy_stats.html(stats_html);
 			}
 
 			if(!active){
-				if(this.settings.show_on_profile){
+				if(this.settings.show_trophies_on_profile){
+					var quick_list = yootil.create.profile_content_box();
+					var quick_list_html = this.build_quick_trophy_list();
+
+					if(quick_list_html.length){
+						quick_list.html(quick_list_html);
+
+						if(yootil.user.id() == yootil.page.member.id()){
+							quick_list.insertAfter(first_box);
+						} else {
+							quick_list.insertBefore(first_box);
+						}
+					}
+				}
+
+				if(stats_html){
 					if(yootil.user.id() == yootil.page.member.id()){
 						trophy_stats.insertAfter(first_box);
 					} else{
@@ -28,15 +45,51 @@ $.extend(trophies, {
 				var trophy_list = yootil.create.profile_content_box();
 
 				if(this.packs.length > 1){
-					this.create_pack_tabs();
+					if(this.settings.show_pack_tabs){
+						this.create_pack_tabs();
+					}
+
 					trophy_list.addClass("trophies-content-box-list")
 				}
 
 				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
 			}
 
+			if(stats_html){
+				this.setup_animations(the_user, active);
+			}
+
 			yootil.create.profile_tab("Trophies", "trophies", active);
 		}
+	},
+
+	setup_animations: function(the_user, active){
+
+		// Handle basic stats
+
+		var spans = $(".trophy-table .trophy-cell span[id^=trophies-][data-value]");
+
+		var interval = setInterval(function(){
+			spans.each(function(){
+				var num = Math.floor(Math.random() * 9);
+
+				$(this).html(num);
+			});
+		}, 100);
+
+		// Handle bar
+
+		$(".trophy-stats-progress-highlight").animate({
+
+			width: trophies.data(the_user).get.stat.level_percentage() + "%"
+
+		}, ((active)? 3000 : 6500), $.easeOutCirc, function(){
+			clearInterval(interval);
+
+			spans.each(function(){
+				$(this).text($(this).attr("data-value"));
+			});
+		});
 	},
 
 	create_pack_tabs: function(){
@@ -53,7 +106,7 @@ $.extend(trophies, {
 			var pack_info= this.utils.get.pack(the_packs[index]);
 
 			if(pack_info){
-				tabs_html += '<li title="' + yootil.html_encode(pack_info.desc) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
+				tabs_html += '<li title="' + yootil.html_encode(pack_info.description) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
 			}
 		}
 
@@ -97,7 +150,7 @@ $.extend(trophies, {
 	build_trophy_list: function(){
 		var trophy_list = "";
 		var counter = 0;
-		var time_24 = (yootil.user.logged_in() && yootil.user.time_format() == "12hr")? false : true;
+		var time_24 = (yootil.user.time_format() == "12hr")? false : true;
 		var the_user = yootil.page.member.id() || yootil.user.id();
 		var list = this.utils.get.all_trophies(the_user, true);
 
@@ -106,7 +159,7 @@ $.extend(trophies, {
 				continue;
 			}
 
-			var has_earned = (yootil.user.logged_in() && this.data(the_user).trophy.earned(list[trophy]))? true : false;
+			var has_earned = (this.data(the_user).trophy.earned(list[trophy]))? true : false;
 			var cup_big = this.images.bronze_big;
 			var cup_small = this.images.bronze;
 			var trophy_img = (has_earned)? this.utils.fetch_image(list[trophy]) : this.images["locked"];
@@ -137,25 +190,8 @@ $.extend(trophies, {
 			var big_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_big) + "' title='" + alt + "' alt='" + alt + "' />";
 			var small_cup_img = "<img class='trophies-tiptip' src='" + yootil.html_encode(cup_small) + "' title='" + alt + "' alt='" + alt + "' />";
 
-			if(user_trophy && user_trophy.t && has_earned){
-				var date = new Date(user_trophy.t);
-				var day = date.getDate() || 1;
-				var month = yootil.month(date.getMonth(), true);
-				var year = date.getFullYear();
-				var hours = date.getHours();
-				var mins = date.getMinutes();
-				var am_pm = "";
-
-				mins = (mins < 10)? "0" + mins : mins;
-				date_str = "Earned on " + day + yootil.suffix(day) + " of " + month + ", " + year;
-
-				if(!time_24){
-					am_pm = (hours > 11)? "pm" : "am";
-					hours = hours % 12;
-					hours = (hours)? hours : 12;
-				}
-
-				date_str += ", at " + hours + ":" + mins + am_pm;
+			if(has_earned){
+				date_str = this.get_trophy_date_str(user_trophy, time_24);
 			}
 
 			// Details for staff
@@ -189,6 +225,37 @@ $.extend(trophies, {
 		return trophy_list;
 	},
 
+	get_trophy_date_str: function(user_trophy, time_24){
+		var str = "";
+
+		if(this.settings.show_date){
+			if(user_trophy && user_trophy.t){
+				var date = new Date(user_trophy.t);
+				var day = date.getDate() || 1;
+				var month = yootil.month(date.getMonth(), true);
+				var year = date.getFullYear();
+				var hours = date.getHours();
+				var mins = date.getMinutes();
+				var am_pm = "";
+
+				mins = (mins < 10)? "0" + mins : mins;
+				str = "Earned on, " + day + yootil.suffix(day) + " of " + month + ", " + year;
+
+				if(this.settings.show_time){
+					if(!time_24){
+						am_pm = (hours > 11)? "pm" : "am";
+						hours = hours % 12;
+						hours = (hours)? hours : 12;
+					}
+
+					str += ", at " + hours + ":" + mins + am_pm;
+				}
+			}
+		}
+
+		return str;
+	},
+
 	// This appears on the trophy page and the profile page
 
 	create_trophy_stats: function(){
@@ -200,12 +267,12 @@ $.extend(trophies, {
 				html += "<div class='trophy-cell'>";
 					html += "<div class='trophy-table'>";
 						html += "<div class='trophy-row trophy-stats'>";
-							html += "<div class='trophy-cell'><h4>Level</h4><span class='trophies-tiptip' title='Current level'>" + data.get.stat.current_level() + "</span></div>";
-							html += "<div class='trophy-cell'><h4>Progress</h4><span class='trophies-tiptip' title='Progress of current level'>" + data.get.stat.level_percentage() + "%</span></div>";
-							html += "<div class='trophy-cell'><h4>Trophies</h4><span class='trophies-tiptip' title='Total trophies earned'>" + data.get.stat.total_trophies() + "</span></div>";
-							html += "<div class='trophy-cell'><h4>Bronze</h4><span class='trophies-tiptip' title='Total bronze trophies earned'>" + data.get.stat.cups.bronze() + "<img src='" + this.images.bronze + "' /></span></div>";
-							html += "<div class='trophy-cell'><h4>Silver</h4><span class='trophies-tiptip' title='Total silver trophies earned'>" + data.get.stat.cups.silver() + "<img src='" + this.images.silver + "' /></span></div>";
-							html += "<div class='trophy-cell'><h4>Gold</h4><span class='trophies-tiptip' title='Total gold trophies earned'>" + data.get.stat.cups.gold() + "<img src='" + this.images.gold + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Level</h4><span id='trophies-level' class='trophies-tiptip' title='Current level' data-value='" + data.get.stat.current_level() + "'>0</span></div>";
+							html += "<div class='trophy-cell'><h4>Progress</h4><span class='trophies-tiptip' title='Progress of current level'><span id='trophies-progress' data-value='" + data.get.stat.level_percentage() + "'>0</span>%</span></div>";
+							html += "<div class='trophy-cell'><h4>Trophies</h4><span id='trophies-total-trophies' class='trophies-tiptip' title='Total trophies earned' data-value='" + data.get.stat.total_trophies() + "'>0</span></div>";
+							html += "<div class='trophy-cell'><h4>Bronze</h4><span class='trophies-tiptip' title='Total bronze trophies earned'><span id='trophies-total-bronze' data-value='" + data.get.stat.cups.bronze() + "'>0</span><img src='" + this.images.bronze + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Silver</h4><span class='trophies-tiptip' title='Total silver trophies earned'><span id='trophies-total-silver' data-value='" + data.get.stat.cups.silver() + "'>0</span><img src='" + this.images.silver + "' /></span></div>";
+							html += "<div class='trophy-cell'><h4>Gold</h4><span class='trophies-tiptip' title='Total gold trophies earned'><span id='trophies-total-gold' data-value='" + data.get.stat.cups.gold() + "'>0</span><img src='" + this.images.gold + "' /></span></div>";
 						html += "</div>";
 					html += "</div>";
 				html += "</div>";
@@ -217,12 +284,12 @@ $.extend(trophies, {
 							html += "<div class='trophy-cell'> &nbsp; </div>";
 							html += "<div class='trophy-cell'>";
 								html += "<div class='trophy-stats-level-info'>";
-									html += "<div class='trophy-stats-current-level'>Level " + data.get.stat.current_level() + "</div>";
-									html += "<div class='trophy-stats-next-level'>Next " + data.get.stat.next_level() + "</div>";
+									html += "<div class='trophy-stats-current-level'>Level <span id='trophies-current-level' data-value='" + data.get.stat.current_level() + "'>0</span></div>";
+									html += "<div class='trophy-stats-next-level'>Next <span id='trophies-next-level' data-value='" + data.get.stat.next_level() + "'>0</span></div>";
 									html += "<br style='clear: both' />";
 								html += "</div>";
 								html += "<div class='trophy-stats-progress-bar'>";
-									html += "<div class='trophy-stats-progress-highlight' style='width: " + data.get.stat.level_percentage() + "%;'>&nbsp;</div>";
+									html += "<div class='trophy-stats-progress-highlight' style='width: 0%;'>&nbsp;</div>";
 								html += "</div>";
 							html += "</div>";
 							html += "<div class='trophy-cell'> &nbsp; </div>";
@@ -231,6 +298,45 @@ $.extend(trophies, {
 				html += "</div>";
 			html += "</div>";
 		html += "</div>";
+
+		return html;
+	},
+
+	build_quick_trophy_list: function(){
+		var html = "";
+
+		var the_user = yootil.page.member.id() || yootil.user.id();
+		var list = this.utils.get.all_trophies(the_user, true);
+		var has_trophies = false;
+		var time_24 = (yootil.user.time_format() == "12hr")? false : true;
+
+		for(var trophy in list){
+			if(trophy.disabled){
+				continue;
+			}
+
+			var has_earned = (this.data(the_user).trophy.earned(list[trophy]))? true : false;
+			var trophy_img = (has_earned)? this.utils.fetch_image(list[trophy]) : this.images["locked"];
+
+			if(has_earned){
+				var title = "";
+				var user_trophy = this.data(the_user).get.trophy(list[trophy], false, true);
+				var date_str = this.get_trophy_date_str(user_trophy, time_24);
+
+				title += list[trophy].description;
+
+				if(date_str){
+					title += "<br />" + date_str;
+				}
+
+				if(yootil.user.is_staff() && this.settings.show_details){
+					title += "<br /><br />Trophy Pack Name: " + list[trophy].pack_name + "<br />Trophy Pack ID: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
+				}
+
+				html += "<img class='trophies-tiptip' title='" + title + "' data-pack='" + yootil.html_encode(list[trophy].pack) + "' src='" + trophy_img + "' />";
+				has_trophies = true;
+			}
+		}
 
 		return html;
 	}
