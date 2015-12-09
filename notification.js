@@ -86,11 +86,11 @@ $.extend(trophies, {
 	},
 
 	parse_template: function(tpl, trophy, position){
-		var tmp = trophy;
+		var tmp_trophy = $.extend({}, trophy);
 
-		tmp.position = position;
+		tmp_trophy.position = position;
 
-		for(var key in tmp){
+		for(var key in tmp_trophy){
 			if(key == "callback" || key == "disabled"){
 				continue;
 			}
@@ -99,12 +99,12 @@ $.extend(trophies, {
 
 			if(re.test(tpl)){
 				if(key == "cup"){
-					tmp[key] = trophies.images[tmp[key]];
+					tmp_trophy[key] = trophies.images[tmp_trophy[key]];
 				} else if(key == "image"){
-					tmp[key] = trophies.utils.fetch_image(trophy);
+					tmp_trophy[key] = trophies.utils.fetch_image(trophy);
 				}
 
-				tpl = tpl.replace(re, tmp[key]);
+				tpl = tpl.replace(re, tmp_trophy[key]);
 			}
 		}
 

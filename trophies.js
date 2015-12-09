@@ -86,10 +86,13 @@ $.extend(trophies, {
 		notification_custom_tpl: "",
 
 		show_stats_on_profile: true,
-		show_in_mini_profile: true,
 		show_in_members_list: true,
 		show_trophies_on_profile: true,
 		show_pack_tabs: true,
+
+		show_mini_profile_total_trophies: true,
+		show_mini_profile_total_cups: true,
+		show_mini_profile_current_level: true,
 
 		show_date: true,
 		show_time: false,
@@ -161,7 +164,7 @@ $.extend(trophies, {
 		} else {
 			var location_check = (yootil.location.search_results() || yootil.location.message_thread() || yootil.location.thread() || yootil.location.recent_posts());
 
-			if(this.settings.show_in_mini_profile && location_check){
+			if((this.settings.show_mini_profile_total_trophies || this.settings.show_mini_profile_total_cups || this.settings.show_mini_profile_current_level) && location_check){
 				this.show_in_mini_profile();
 				yootil.ajax.after_search(this.show_in_mini_profile, this);
 			}
@@ -206,7 +209,6 @@ $.extend(trophies, {
 			this.settings.notification_custom_enabled = (!! ~~ settings.custom_notificaiton)? true : false;
 			this.settings.notification_custom_tpl = (settings.notification_template)? settings.notification_template : "";
 
-			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
 			this.settings.show_stats_on_profile = (!! ~~ settings.show_stats_on_profile)? true : false;
 			this.settings.show_in_members_list = (!! ~~ settings.show_in_members_list)? true : false;
 			this.settings.show_details = (!! ~~ settings.show_details)? true : false;
@@ -221,6 +223,10 @@ $.extend(trophies, {
 			this.settings.bronze_xp = (~~ settings.bronze_xp)? (~~ settings.bronze_xp) : this.settings.bronze_xp;
 			this.settings.silver_xp = (~~ settings.silver_xp)? (~~ settings.silver_xp) : this.settings.silver_xp;
 			this.settings.gold_xp = (~~ settings.gold_xp)? (~~ settings.gold_xp) : this.settings.gold_xp;
+
+			this.settings.show_mini_profile_total_trophies = (!! ~~ settings.show_total_trophies)? true : false;
+			this.settings.show_mini_profile_total_cups = (!! ~~ settings.show_trophy_cups)? true : false;
+			this.settings.show_mini_profile_current_level = (!! ~~ settings.show_trophy_level)? true : false;
 		}
 	},
 
@@ -419,8 +425,8 @@ $.extend(trophies, {
 
 	init_trophy_checks: function(){
 		for(var pack in this.lookup){
-			for(var id in this.lookup[pack]){
-				var trophy = this.lookup[pack][id];
+			for(var trophy_id in this.lookup[pack]){
+				var trophy = this.lookup[pack][trophy_id];
 	
 				if(!trophy.disabled && typeof trophy.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(trophy)){
 					trophy.callback.call(this, trophy);

@@ -28,7 +28,7 @@ $.extend(trophies, {
 						var elem = ($(this).find(".trophies-custom-mini-profile").length == 1)? $(this).find(".trophies-custom-mini-profile") : $(this).find(".info");
 
 						if(elem && elem.length){
-							elem.append(self.create_cup_stats(user_id));
+							elem.append(self.create_stats(user_id));
 						}
 					}
 				}
@@ -36,19 +36,32 @@ $.extend(trophies, {
 		}
 	},
 
-	create_cup_stats: function(user_id){
+	create_stats: function(user_id){
 		var data = this.data(user_id);
-		var cups_html = "<div class='trophies-mini-profile'>";
+		var html = "<div class='trophies-mini-profile'>";
 
 		data.calculate_stats();
 
-		cups_html += "<span class='trophies-tiptip' title='Bronze'><img src='" + this.images.bronze + "' /> x " + data.get.stat.cups.bronze() + "</span>";
-		cups_html += "<span class='trophies-tiptip' title='Silver'><img src='" + this.images.silver + "' /> x " + data.get.stat.cups.silver() + "</span>";
-		cups_html += "<span class='trophies-tiptip' title='Gold'><img src='" + this.images.gold + "' /> x " + data.get.stat.cups.gold() + "</span>";
+		if(this.settings.show_mini_profile_current_level){
+			html += "<span class='trophies-tiptip trophies-mini-profile-level' title='Trophy Level'>Trophy Level: " + data.get.stat.current_level() + "</span><br />";
+		}
 
-		cups_html += "</div>";
+		if(this.settings.show_mini_profile_total_trophies){
+			html += "<span class='trophies-tiptip trophies-mini-profile-total' title='Total Trophies'>Total Trophies: " + data.get.stat.total_trophies() + "</span><br />";
 
-		return $(cups_html);
+		}
+
+		if(this.settings.show_mini_profile_total_cups){
+			html += "<div class='trophies-mini-profile-cups'>";
+			html += "<span class='trophies-tiptip trophies-mini-profile-cup' title='Bronze'><img src='" + this.images.bronze + "' /> x " + data.get.stat.cups.bronze() + "</span>";
+			html += "<span class='trophies-tiptip trophies-mini-profile-cup' title='Silver'><img src='" + this.images.silver + "' /> x " + data.get.stat.cups.silver() + "</span>";
+			html += "<span class='trophies-tiptip trophies-mini-profile-cup' title='Gold'><img src='" + this.images.gold + "' /> x " + data.get.stat.cups.gold() + "</span>";
+			html += "</div>";
+		}
+
+		html += "</div>";
+
+		return $(html);
 	}
 
 });

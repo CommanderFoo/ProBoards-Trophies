@@ -3,8 +3,9 @@ $.extend(trophies, {
 	create_tab: function(){
 		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
 		var first_box = $("form.form_user_status .content-box:first");
+		var custom = $("#trophies-custom-profile");
 
-		if(first_box.length){
+		if(first_box.length || custom.length == 1){
 			var the_user = yootil.page.member.id() || yootil.user.id();
 
 			this.data(the_user).calculate_stats();
@@ -27,21 +28,29 @@ $.extend(trophies, {
 						quick_list = trophy_quick_list;
 						trophy_quick_list.html(quick_list_html);
 
-						if(yootil.user.id() == yootil.page.member.id()){
-							trophy_quick_list.insertAfter(first_box);
-						} else {
-							trophy_quick_list.insertBefore(first_box);
-						}
+					//	if(yootil.user.id() == yootil.page.member.id()){
+					//		trophy_quick_list.insertAfter(first_box);
+					//	} else {
+							if(custom.length){
+								custom.append(trophy_quick_list);
+							} else {
+								trophy_quick_list.insertBefore(first_box);
+							}
+					//	}
 					}
 				}
 
 				if(stats_html){
 					if(quick_list){
 						trophy_stats.insertBefore(quick_list);
-					} else if(yootil.user.id() == yootil.page.member.id()){
-						trophy_stats.insertAfter(first_box);
+					//} else if(yootil.user.id() == yootil.page.member.id()){
+						//trophy_stats.insertAfter(first_box);
 					} else {
-						trophy_stats.insertBefore(first_box);
+						if(custom.length){
+							custom.append(trophy_quick_list);
+						} else {
+							trophy_stats.insertBefore(first_box);
+						}
 					}
 				}
 			} else {
@@ -322,9 +331,9 @@ $.extend(trophies, {
 			}
 
 			var has_earned = (this.data(the_user).trophy.earned(list[trophy]))? true : false;
-			var trophy_img = (has_earned)? this.utils.fetch_image(list[trophy]) : this.images["locked"];
 
 			if(has_earned){
+				var trophy_img = (has_earned)? this.utils.fetch_image(list[trophy]) : this.images["locked"];
 				var title = "";
 				var user_trophy = this.data(the_user).get.trophy(list[trophy], false, true);
 				var date_str = this.get_trophy_date_str(user_trophy, time_24);

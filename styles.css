@@ -232,9 +232,15 @@ td.trophies-members-list-cups span, div.trophies-mini-profile span {
 
 }
 
-td.trophies-members-list-cups span:last-child, div.trophies-mini-profile span:last-child {
+td.trophies-members-list-cups span:last-child, div.trophies-mini-profile-cups span:last-child {
 
 	margin-right: 0px;
+
+}
+
+div.trophies-mini-profile div.trophies-mini-profile-cups {
+
+	margin-top: 3px;
 
 }
 
