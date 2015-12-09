@@ -111,7 +111,7 @@ $.extend(trophies, {
 			var pack_info= this.utils.get.pack(the_packs[index]);
 
 			if(pack_info){
-				tabs_html += '<li title="' + yootil.html_encode(pack_info.description) + '" class="trophies-tiptip" id="trophy_pack_tab_' + yootil.html_encode(pack_info.pack) + '"><a href="#">' + yootil.html_encode(pack_info.name) + '</a></li>';
+				tabs_html += '<li title="' + pack_info.description + '" class="trophies-tiptip" id="trophy_pack_tab_' + pack_info.pack + '"><a href="#">' + pack_info.name + '</a></li>';
 			}
 		}
 
@@ -208,11 +208,11 @@ $.extend(trophies, {
 				title = "Trophy Pack Name: " + list[trophy].pack_name + "<br />Trophy Pack ID: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
 			}
 
-			trophy_list += "<div class='trophy-list-trophy" + opacity + "' data-pack='" + yootil.html_encode(list[trophy].pack) + "'>";
+			trophy_list += "<div class='trophy-list-trophy" + opacity + "' data-pack='" + list[trophy].pack + "'>";
 			trophy_list += "<div class='trophy-list-trophy-img'><img class='trophies-tiptip' title='" + title + "' src='" + trophy_img + "' /></div>";
 			trophy_list += "<div class='trophy-list-trophy-title-desc'>";
-			trophy_list += "<div class='trophy-list-trophy-title'><span class='trophy-list-trophy-title-cup'>" + small_cup_img + "</span> <strong>" + yootil.html_encode(list[trophy].title) + "</strong></div>";
-			trophy_list += "<div class='trophy-list-trophy-desc'>" + yootil.html_encode(list[trophy].description) + ".</div></div>";
+			trophy_list += "<div class='trophy-list-trophy-title'><span class='trophy-list-trophy-title-cup'>" + small_cup_img + "</span> <strong>" + list[trophy].title + "</strong></div>";
+			trophy_list += "<div class='trophy-list-trophy-desc'>" + list[trophy].description + ".</div></div>";
 			trophy_list += "<div class='trophy-list-trophy-big-cup'>" + big_cup_img + "</div>";
 			trophy_list += "<div class='trophy-list-trophy-earned-date'>" + date_str + "</div>";
 			trophy_list += "<br style='clear: both' /></div>";
@@ -339,7 +339,7 @@ $.extend(trophies, {
 					title += "<br /><br />Trophy Pack Name: " + list[trophy].pack_name + "<br />Trophy Pack ID: " + list[trophy].pack + "<br />Trophy ID: " + list[trophy].id;
 				}
 
-				html += "<img class='trophies-tiptip' title='" + title + "' data-pack='" + yootil.html_encode(list[trophy].pack) + "' src='" + trophy_img + "' />";
+				html += "<img class='trophies-tiptip' title='" + title + "' data-pack='" + list[trophy].pack + "' src='" + trophy_img + "' />";
 				has_trophies = true;
 			}
 		}

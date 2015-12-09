@@ -1,45 +1,37 @@
-div.trophy-notification {
+.trophy-notification-wrapper {
 
-	width: 260px;
-	padding: 10px;
-	height: 50px;
-	background-color: #4D4D4D;
-	border: 1px solid #4F5759;
-	color: #CFCFCF;
-	font-size: 13px;
-	font-weight: bold;
+	z-index: 1500;
 	position: fixed;
-	top: 10px;
-	right: 20px;
-	font-family: arial;
-	border-radius: 7px;
 
 }
 
-div.trophy-notification-left {
+/* Notification Positions */
 
-	float: left;
+.trophy-notification-pos-top-left {
 
-}
-
-div.trophy-notification-title {
-
-	margin-top: 6px;
-	margin-left: 10px;
-	text-shadow: 2px 2px 3px rgb(0, 0, 0);
+	top: 0px;
+	left: 0px;
 
 }
 
-p.trophy-notification-info {
+.trophy-notification-pos-top-right {
 
-	margin-top: 0px;
+	top: 0px;
+	right: 0px;
 
 }
 
-img.trophy-notification-cup {
+.trophy-notification-pos-bottom-left {
 
-	position: relative;
-	top: 4px;
+	bottom: 0px;
+	left: 0px;
+
+}
+
+.trophy-notification-pos-bottom-right {
+
+	bottom: 0px;
+	right: 0px;
 
 }
 
@@ -245,3 +237,147 @@ td.trophies-members-list-cups span:last-child, div.trophies-mini-profile span:la
 	margin-right: 0px;
 
 }
+
+/* PS3 Theme */
+
+div.trophy-notification-wrapper.trophy-theme-ps3 {
+
+	padding: 25px;
+
+}
+
+div.trophy-notification-theme-ps3 {
+
+	width: 260px;
+	padding: 10px;
+	height: 50px;
+	background-color: #4D4D4D;
+	border: 1px solid #4F5759;
+	color: #CFCFCF;
+	font-size: 13px;
+	font-weight: bold;
+	font-family: arial;
+	border-radius: 7px;
+
+}
+
+div.trophy-notification-theme-ps3-left {
+
+	float: left;
+
+}
+
+div.trophy-notification-theme-ps3-title {
+
+	margin-top: 6px;
+	margin-left: 14px;
+	float: left;
+	text-shadow: 2px 2px 3px rgb(0, 0, 0);
+
+}
+
+p.trophy-notification-theme-ps3-info {
+
+	margin-top: 0px;
+
+}
+
+img.trophy-notification-theme-ps3-cup {
+
+	position: relative;
+	top: 4px;
+
+}
+
+/* PS3 Theme End */
+
+/* PS4 Theme */
+
+div.trophy-notification-theme-ps4-inner {
+
+	background-color: #040506;
+	color: #777879;
+	padding: 7px;
+	display: table;
+
+}
+
+div.trophy-notification-theme-ps4-wrapper {
+
+	background-color: #454e4d;
+	opacity: 0.95;
+	padding: 2px;
+	border: 1px solid #000;
+	box-shadow: 0px 0px 5px 1px rgba(0, 0, 0, 0.8);
+	margin-top: 10px;
+	margin-bottom: 10px;
+
+}
+
+div.trophy-notification-theme-ps4-image {
+
+	float: left;
+	margin-right: 10px;
+
+}
+
+img.trophy-notification-theme-ps4-cup {
+
+	position: relative;
+	top: 3px;
+
+}
+
+div.trophy-notification-theme-ps4-image img {
+
+	vertical-align: middle;
+
+}
+
+span.trophy-notification-theme-ps4-title {
+
+	font-weight: bold;
+	font-size: 12px;
+
+}
+
+div.trophy-notification-theme-ps4-info {
+
+	font-size: 90%;
+	display: table-cell;
+	vertical-align: middle;
+
+}
+
+p.trophy-notification-theme-ps4-desc {
+
+	margin-top: 3px;
+
+}
+
+div.trophy-theme-ps4.trophy-notification-pos-top-left, div.trophy-theme-ps4.trophy-notification-pos-bottom-left {
+
+	left: -5px;
+
+}
+
+div.trophy-theme-ps4.trophy-notification-pos-top-left div.trophy-notification-theme-ps4-inner, div.trophy-theme-ps4.trophy-notification-pos-bottom-left div.trophy-notification-theme-ps4-inner {
+
+	padding-left: 40px;
+	padding-right: 15px;
+
+}
+
+div.trophy-theme-ps4.trophy-notification-pos-top-right , div.trophy-theme-ps4.trophy-notification-pos-bottom-right {
+
+	right: -5px;
+
+}
+
+div.trophy-theme-ps4.trophy-notification-pos-top-right div.trophy-notification-theme-ps4-inner, div.trophy-theme-ps4.trophy-notification-pos-bottom-right div.trophy-notification-theme-ps4-inner {
+
+	padding-right: 50px;
+
+}
+
+/* PS4 Theme End */

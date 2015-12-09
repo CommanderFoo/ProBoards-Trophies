@@ -79,6 +79,11 @@ $.extend(trophies, {
 	settings: {
 
 		notification_disable: false,
+		notification_position: 1,
+		notification_theme: 2,
+		notification_duration: 3000,
+		notification_custom_enabled: false,
+		notification_custom_tpl: "",
 
 		show_stats_on_profile: true,
 		show_in_mini_profile: true,
@@ -193,6 +198,14 @@ $.extend(trophies, {
 			this.banned_members = settings.banned_members;
 			this.banned_groups = settings.banned_groups;
 
+			this.settings.notification_disable = (!! ~~ settings.disable_notification)? true : false;
+			this.settings.notification_position = (~~ settings.notification_position) || 1;
+			this.settings.notification_theme = (~~ settings.notification_theme) || 2;
+			this.settings.notification_duration = (parseFloat(settings.notification_duration) * 1000) || 3000;
+
+			this.settings.notification_custom_enabled = (!! ~~ settings.custom_notificaiton)? true : false;
+			this.settings.notification_custom_tpl = (settings.notification_template)? settings.notification_template : "";
+
 			this.settings.show_in_mini_profile = (!! ~~ settings.show_in_mini_profile)? true : false;
 			this.settings.show_stats_on_profile = (!! ~~ settings.show_stats_on_profile)? true : false;
 			this.settings.show_in_members_list = (!! ~~ settings.show_in_members_list)? true : false;
@@ -214,7 +227,7 @@ $.extend(trophies, {
 	register_trophy_pack: function(){
 		if(typeof TROPHY_REGISTER != "undefined"){
 			for(var p in TROPHY_REGISTER){
-				var the_pack = p;
+				var the_pack = yootil.html_encode(p);
 
 				if(typeof TROPHY_REGISTER[the_pack].trophies != "undefined" && TROPHY_REGISTER[the_pack].trophies.constructor == Array && TROPHY_REGISTER[the_pack].trophies.length && typeof TROPHY_REGISTER[the_pack].name != "undefined"){
 					this.packs.push(the_pack);
@@ -242,6 +255,11 @@ $.extend(trophies, {
 						TROPHY_REGISTER[the_pack].description = TROPHY_REGISTER[the_pack].name;
 					}
 
+					// Make sure values are safe
+
+					TROPHY_REGISTER[the_pack].name = yootil.html_encode(TROPHY_REGISTER[the_pack].name);
+					TROPHY_REGISTER[the_pack].description = yootil.html_encode(TROPHY_REGISTER[the_pack].description);
+
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
 						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
 
@@ -256,13 +274,17 @@ $.extend(trophies, {
 	},
 
 	register_trophy: function(trophy){
-		if(typeof trophy == "undefined" || typeof trophy.id == "undefined"){
+		if(typeof trophy == "undefined" || typeof trophy.id == "undefined" || !(~~ trophy.id)){
 			return;
 		}
 
 		if(!this.lookup[trophy.pack]){
 			this.lookup[trophy.pack] = {};
 		}
+
+		trophy.id = ~~ trophy.id;
+		trophy.title = yootil.html_encode(trophy.title);
+		trophy.description = yootil.html_encode(trophy.description);
 
 		if(!this.lookup[trophy.pack][trophy.id]){
 			this.lookup[trophy.pack][trophy.id] = trophy;
