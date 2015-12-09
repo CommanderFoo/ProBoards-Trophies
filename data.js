@@ -41,7 +41,7 @@ trophies.Data = (function(){
 
 		var self = this;
 
-		this.sync_to_keys = function(skip_key_update, callbacks){
+		this.sync_to_keys = function(hook, skip_key_update, callbacks){
 
 			// Update all pack keys with the data and trophies
 
@@ -69,6 +69,7 @@ trophies.Data = (function(){
 									// it has been seen.
 
 									if(_local_data[trophy_id].s){
+										console.log("trophy seen [removing]: " + trophy_id);
 										self.remove.trophy(the_trophy, true);
 									}
 								}
@@ -113,7 +114,16 @@ trophies.Data = (function(){
 								return;
 							}
 
-							yootil.key.set(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, callbacks);
+
+							if(hook){
+								yootil.key.set_on(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, hook);
+							} else {
+								/*console.group("Before key set");
+								console.log(self.get.pack(pack_info.pack));
+								console.log(self.get.local_pack(pack_info.pack));
+								console.groupEnd();
+								yootil.key.set(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, callbacks);*/
+							}
 						}
 					}
 				}
@@ -257,7 +267,7 @@ trophies.Data = (function(){
 					}
 				}
 
-				return null;
+				return {};
 			},
 
 			local_pack_data: function(pack_id){
@@ -269,7 +279,7 @@ trophies.Data = (function(){
 					}
 				}
 
-				return null;
+				return {};
 			},
 
 			trophy: function(trophy, local, anywhere){
@@ -642,24 +652,24 @@ trophies.Data = (function(){
 				}
 			}
 
-			var pecent = 0;
+			var percentage = 0;
 
 			if(!this.stats.maxed){
 				var next_level_points = trophies.levels[this.stats.next_level - 1];
 				var points_needed = (next_level_points - this.stats.total_points);
 
 				if(next_level_points){
-					percent = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
+					percentage = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
 				}
 
-				if(percent > 100){
-					percent = 100;
+				if(percentage > 100){
+					percentage = 100;
 				}
 			} else {
-				percent = 100;
+				percentage = 100;
 			}
 
-			this.stats.level_percentage = percent;
+			this.stats.level_percentage = percentage;
 			this.stats.calculated = true;
 		}
 	}

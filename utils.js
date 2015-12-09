@@ -158,10 +158,11 @@ trophies.utils = {
 	// a_str and b_str are made up of the 4 chars + the number for the final check.
 
 	sorting_func: function(a, b) {
-		var _a = a.title.substr(0, 4).replace(/[^\w]/g, "");
-		var _b = b.title.substr(0, 4).replace(/[^\w]/g, "");
-		var _a_num = ~~ ((a.title.match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
-		var _b_num = ~~ ((b.title.match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
+		var k = (a.sort_on)? a.sort_on : "title";
+		var _a = a[k].substr(0, 4).replace(/[^\w]/g, "");
+		var _b = b[k].substr(0, 4).replace(/[^\w]/g, "");
+		var _a_num = ~~ ((a[k].match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
+		var _b_num = ~~ ((b[k].match(/([\d\,]+)/g))? RegExp.$1 : "").replace(/\D/g, "");
 		var a_str = _a + _a_num;
 		var b_str = _b + _b_num;
 

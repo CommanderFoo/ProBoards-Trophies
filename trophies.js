@@ -15,20 +15,6 @@ $.extend(trophies, {
 	VERSION: "{VER}",
 
 	/**
-	 * This is the ProBoards plugin key we are using.
-	 * @property {String} KEY
-	 */
-
-	KEY: "pixeldepth_trophies",
-
-	/**
-	 * This is the min required Yootil version that is needed.
-	 * @property {String} required_yootil_version
-	 */
-
-	required_yootil_version: "1.1.0",
-
-	/**
 	 * This holds a reference to the plugin object returned by ProBoards.
 	 * @property {Object} plugin
 	 */
@@ -111,6 +97,8 @@ $.extend(trophies, {
 
 	},
 
+	events: {},
+
 	/**
 	 * @property {Array} banned_members Members who are banned from earning trophies.
 	 */
@@ -133,13 +121,18 @@ $.extend(trophies, {
 
 	packs: [],
 
+	inits: [],
+
+	submit_processed: false,
+
+
 	/**
 	 * Starts the magic.
 	 * Various this happening here.  We do Yootil checks, setup user lookup table, and other things.
 	 */
 
 	init: function(){
-		if(!this.check_yootil()){
+		if(typeof yootil == "undefined"){
 			return;
 		}
 
@@ -147,11 +140,19 @@ $.extend(trophies, {
 
 		this.setup();
 		this.generate_xp_levels();
-		this.register_trophy_pack();
+
+		$($.proxy(this.ready, this));
+
+		return this;
+	},
+
+	ready: function(){
+		this.register_trophy_packs();
 		this.setup_user_data_table();
 
 		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
 			this.show_unseen_trophies();
+			this.call_pack_inits();
 			this.init_trophy_checks();
 			this.bind_events();
 		}
@@ -230,7 +231,7 @@ $.extend(trophies, {
 		}
 	},
 
-	register_trophy_pack: function(){
+	register_trophy_packs: function(){
 		if(typeof TROPHY_REGISTER != "undefined"){
 			for(var p in TROPHY_REGISTER){
 				var the_pack = yootil.html_encode(p);
@@ -265,6 +266,12 @@ $.extend(trophies, {
 
 					TROPHY_REGISTER[the_pack].name = yootil.html_encode(TROPHY_REGISTER[the_pack].name);
 					TROPHY_REGISTER[the_pack].description = yootil.html_encode(TROPHY_REGISTER[the_pack].description);
+
+					// Do we have an init?
+
+					if(typeof TROPHY_REGISTER[the_pack].init != "undefined"){
+						this.inits.push(TROPHY_REGISTER[the_pack].init);
+					}
 
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
 						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
@@ -302,21 +309,45 @@ $.extend(trophies, {
 	 */
 
 	bind_events: function(){
-		var posting = (yootil.location.thread() || yootil.location.editing() || yootil.location.posting());
-		var messaging = (yootil.location.conversation_new() || yootil.location.messaging());
+		var hook;
+		var the_form;
 
-		if(posting || messaging){
-			var the_form;
+		if(yootil.location.posting()){
+			the_form = yootil.form.post();
+			hook = (yootil.location.posting_thread())? "thread_new" : "post_new";
+		} else if(yootil.location.editing()){
+			the_form = yootil.form.edit_post();
+			hook = "post_edit";
+		} else if(yootil.location.thread()){
+			the_form = yootil.form.post_quick_reply();
+			hook = "post_quick_reply";
+		}
 
-			if(posting){
-				the_form = yootil.form.any_posting();
-			} else{
-				the_form = yootil.form.any_messaging();
-			}
+		if(the_form && the_form.length){
+			if(hook){
+				console.log("Dom ready? - " + $.isReady);
 
-			if(the_form.length == 1){
+				the_form.bind("submit", function(){
+					console.log("grrrr");
+				});
+
 				the_form.bind("submit", $.proxy(function(){
-					this.data(yootil.user.id()).sync_to_keys();
+					console.log("hello");
+
+					if(!this.submit_processed){
+						console.log("Now processing");
+						/*$(this.events).trigger("trophies.form_submit", {
+
+							form: the_form,
+							data: this.data(yootil.user.id())
+
+						});*/
+
+						console.log(yootil.storage.get("pixeldepth_trophies", true))
+						this.data(yootil.user.id()).sync_to_keys(hook);
+						console.log(yootil.storage.get("pixeldepth_trophies", true))
+						this.submit_processed = true;
+					}
 				}, this));
 			}
 		}
@@ -419,6 +450,12 @@ $.extend(trophies, {
 		return user_data;
 	},
 
+	call_pack_inits: function(){
+		for(var func in this.inits){
+			this.inits[func](this.events);
+		}
+	},
+
 	/**
 	 * Each trophy has it's own method to be called.  Here we call those methods.
 	 */
@@ -433,50 +470,6 @@ $.extend(trophies, {
 				}
 			}
 		}
-	},
-
-	/**
-	 * Yootil is needed, so we check for it, and also check that we are using the needed version.
-	 *
-	 * @return {Boolean}
-	 */
-
-	check_yootil: function(){
-		if(proboards.data && proboards.data("user") && proboards.data("user").id == 1){
-			var body = "";
-			var title = "";
-
-			if(typeof yootil == "undefined"){
-				title = "<div class=\"title-bar\"><h2>Trophies - Yootil Not Found</h2></div>";
-				body = "<p>You do not have the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin installed.</p>";
-				body += "<p>Without the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin, the Trophies plugin will not work.</p>";
-			} else {
-				var versions = yootil.convert_versions(yootil.version(), this.required_yootil_version);
-
-				if(versions[0] < versions[1]){
-					title = "<div class=\"title-bar\"><h2>Trophies - Yootil Needs Updating</h2></div>";
-					body += "<p>The Trophies plugin requires at least " + yootil.html_encode(this.required_yootil_version) + " of the <a href='http://support.proboards.com/thread/429360/'>Yootil</a> plugin.</p>";
-				}
-			}
-
-			if(title.length){
-				var msg = "<div class='trophiy-notification-content'>";
-
-				msg += body;
-				msg += "</div>";
-
-				var notification = "<div class=\"container trophy-yootil-notification\">";
-
-				notification += title;
-				notification += "<div class=\"content pad-all\">" + msg + "</div></div>";
-
-				$("div#content").prepend(notification);
-
-				return false;
-			}
-		}
-
-		return true;
 	}
 
 });
