@@ -1,11 +1,13 @@
 $.extend(trophies, {
 
-	show_in_members_list: function(){
+	show_in_members_list: function(page_ran){
 		if($("td[class^=trophies-members-list]").length){
 			return;
 		}
 
-		this.refresh_user_data_table();
+		if(!page_ran){
+			this.refresh_user_data_table();
+		}
 
 		var self = this;
 		var table = $("div.content.cap-bottom table.list");

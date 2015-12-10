@@ -1,6 +1,6 @@
 $.extend(trophies, {
 
-	show_in_mini_profile: function(){
+	show_in_mini_profile: function(page_ran){
 		var minis = yootil.get.mini_profiles();
 
 		if(minis && minis.length){
@@ -8,7 +8,9 @@ $.extend(trophies, {
 				return;
 			}
 
-			this.refresh_user_data_table();
+			if(!page_ran){
+				this.refresh_user_data_table();
+			}
 
 			var self = this;
 

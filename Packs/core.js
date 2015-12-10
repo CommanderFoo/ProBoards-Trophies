@@ -13,10 +13,21 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 	trophies_key: "t",
 	trophies_data_key: "d",
 
-	init: function(events){
-		$(events).on("trophies.form_submit", function(evt){
-			//console.log("hmm");
-			//console.log(evt);
+	init: function(pack, events){
+		$(events).on("trophies.form_submit", function(evt, user_data, form, hook){
+			var pack_data = user_data.get.pack_data(pack.plugin_id);
+
+			if(yootil.location.posting_thread()){
+
+				// Topics
+
+				if(!pack_data.t){
+					pack_data.t = 0;
+				}
+
+				pack_data.t ++;
+				user_data.set.pack_data(pack.plugin_id, pack_data);
+			}
 		});
 	},
 
@@ -245,13 +256,94 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "First Topic",
 			image: "made_1_topic",
-			description: "Made 1 topic on the forum",
+			description: "Created 1 topic on the forum",
+			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
 				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
-				var current_topics = data.topics || 0;
+				var current_topics = data.t || 0;
 
 				if(current_topics >= 1){
+					this.show_notification(trophy);
+				}
+			}
+
+		},
+
+		{
+
+			id: 15,
+			cup: "bronze",
+			title: "5 Topics",
+			image: "made_5_topics",
+			description: "Created 5 topics on the forum",
+			sort_on: "description",
+			disabled: false,
+			callback: function(trophy){
+				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var current_topics = data.t || 0;
+
+				if(current_topics >= 5){
+					this.show_notification(trophy);
+				}
+			}
+
+		},
+
+		{
+
+			id: 16,
+			cup: "silver",
+			title: "15 Topics",
+			image: "made_15_topics",
+			description: "Created 15 topics on the forum",
+			sort_on: "description",
+			disabled: false,
+			callback: function(trophy){
+				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var current_topics = data.t || 0;
+
+				if(current_topics >= 15){
+					this.show_notification(trophy);
+				}
+			}
+
+		},
+
+		{
+
+			id: 17,
+			cup: "gold",
+			title: "30 Topics",
+			image: "made_30_topics",
+			description: "Created 30 topics on the forum",
+			sort_on: "description",
+			disabled: false,
+			callback: function(trophy){
+				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var current_topics = data.t || 0;
+
+				if(current_topics >= 30){
+					this.show_notification(trophy);
+				}
+			}
+
+		},
+
+		{
+
+			id: 18,
+			cup: "gold",
+			title: "Conversation Starter",
+			image: "made_50_topics",
+			description: "Created 50 topics on the forum",
+			sort_on: "description",
+			disabled: false,
+			callback: function(trophy){
+				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var current_topics = data.t || 0;
+
+				if(current_topics >= 50){
 					this.show_notification(trophy);
 				}
 			}

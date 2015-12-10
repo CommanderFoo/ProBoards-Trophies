@@ -123,8 +123,7 @@ $.extend(trophies, {
 
 	inits: [],
 
-	submit_processed: false,
-
+	submit_fired: false,
 
 	/**
 	 * Starts the magic.
@@ -160,13 +159,13 @@ $.extend(trophies, {
 		if(yootil.location.profile()){
 			this.create_tab();
 		} else if(this.settings.show_in_members_list && yootil.location.members()){
-			this.show_in_members_list();
+			this.show_in_members_list(true);
 			yootil.ajax.after_search(this.show_in_members_list, this);
 		} else {
 			var location_check = (yootil.location.search_results() || yootil.location.message_thread() || yootil.location.thread() || yootil.location.recent_posts());
 
 			if((this.settings.show_mini_profile_total_trophies || this.settings.show_mini_profile_total_cups || this.settings.show_mini_profile_current_level) && location_check){
-				this.show_in_mini_profile();
+				this.show_in_mini_profile(true);
 				yootil.ajax.after_search(this.show_in_mini_profile, this);
 			}
 		}
@@ -270,7 +269,22 @@ $.extend(trophies, {
 					// Do we have an init?
 
 					if(typeof TROPHY_REGISTER[the_pack].init != "undefined"){
-						this.inits.push(TROPHY_REGISTER[the_pack].init);
+						this.inits.push({
+
+							pack: {
+
+								plugin_id: TROPHY_REGISTER[the_pack].plugin_id,
+								plugin_key: TROPHY_REGISTER[the_pack].plugin_key,
+								trophies_key: TROPHY_REGISTER[the_pack].trophies_key,
+								trophies_data_key: TROPHY_REGISTER[the_pack].trophies_data_key,
+								name: TROPHY_REGISTER[the_pack].name,
+								description: TROPHY_REGISTER[the_pack].description
+
+							},
+
+							func: TROPHY_REGISTER[the_pack].init
+
+						});
 					}
 
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
@@ -318,38 +332,24 @@ $.extend(trophies, {
 		} else if(yootil.location.editing()){
 			the_form = yootil.form.edit_post();
 			hook = "post_edit";
-		} else if(yootil.location.thread()){
-			the_form = yootil.form.post_quick_reply();
+		} else if(yootil.location.thread() || yootil.location.message_thread()){
+			the_form = yootil.form.quick_reply();
 			hook = "post_quick_reply";
+		} else if(yootil.location.messaging()){
+			the_form = yootil.form.conversation();
+			hook = (yootil.location.posting_thread())? "conversation_new" : "message_new";
 		}
 
 		if(the_form && the_form.length){
-			if(hook){
-				console.log("Dom ready? - " + $.isReady);
+			the_form.on("submit", $.proxy(function(){
+				if(!this.submit_fired){
+					$(this.events).trigger("trophies.form_submit", [this.data(yootil.user.id()), the_form, hook]);
 
-				the_form.bind("submit", function(){
-					console.log("grrrr");
-				});
+					this.data(yootil.user.id()).sync_to_keys(hook);
+					this.submit_fired = true;
+				}
+			}, this));
 
-				the_form.bind("submit", $.proxy(function(){
-					console.log("hello");
-
-					if(!this.submit_processed){
-						console.log("Now processing");
-						/*$(this.events).trigger("trophies.form_submit", {
-
-							form: the_form,
-							data: this.data(yootil.user.id())
-
-						});*/
-
-						console.log(yootil.storage.get("pixeldepth_trophies", true))
-						this.data(yootil.user.id()).sync_to_keys(hook);
-						console.log(yootil.storage.get("pixeldepth_trophies", true))
-						this.submit_processed = true;
-					}
-				}, this));
-			}
 		}
 	},
 
@@ -451,8 +451,8 @@ $.extend(trophies, {
 	},
 
 	call_pack_inits: function(){
-		for(var func in this.inits){
-			this.inits[func](this.events);
+		for(var k in this.inits){
+			this.inits[k].func(this.inits[k].pack, this.events);
 		}
 	},
 

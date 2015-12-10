@@ -69,7 +69,6 @@ trophies.Data = (function(){
 									// it has been seen.
 
 									if(_local_data[trophy_id].s){
-										console.log("trophy seen [removing]: " + trophy_id);
 										self.remove.trophy(the_trophy, true);
 									}
 								}
@@ -114,15 +113,10 @@ trophies.Data = (function(){
 								return;
 							}
 
-
 							if(hook){
 								yootil.key.set_on(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, hook);
 							} else {
-								/*console.group("Before key set");
-								console.log(self.get.pack(pack_info.pack));
-								console.log(self.get.local_pack(pack_info.pack));
-								console.groupEnd();
-								yootil.key.set(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, callbacks);*/
+								yootil.key.set(pack_info.plugin_key, self.get.pack(pack_info.pack), this.user_id, callbacks);
 							}
 						}
 					}
@@ -656,10 +650,12 @@ trophies.Data = (function(){
 
 			if(!this.stats.maxed){
 				var next_level_points = trophies.levels[this.stats.next_level - 1];
-				var points_needed = (next_level_points - this.stats.total_points);
+				var current_level_points = trophies.levels[this.stats.current_level - 1];
+				var points_so_far = (this.stats.total_points % current_level_points);
+				var diff = next_level_points % current_level_points
 
 				if(next_level_points){
-					percentage = ((this.stats.total_points / next_level_points) * 100).toFixed(0);
+					percentage = ((points_so_far / diff) * 100).toFixed(0);
 				}
 
 				if(percentage > 100){
