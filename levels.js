@@ -2,7 +2,7 @@ $.extend(trophies, {
 
 	generate_xp_levels: function(){
 		var levels = [];
-		var modifier = this.settings.xp_modifier;
+		var modifier = this.settings.xp_modifier / 100;
 		var max_level = this.settings.max_level;
 		var level = 0;
 		var base = (this.settings.bronze_xp * 5);

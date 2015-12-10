@@ -89,7 +89,7 @@ $.extend(trophies, {
 		stats_animation_speed_page: 1500,
 
 		max_level: 99,
-		xp_modifier: 0.10,
+		xp_modifier: 25,
 
 		bronze_xp: 5,
 		silver_xp: 15,
@@ -218,7 +218,8 @@ $.extend(trophies, {
 			this.settings.show_pack_tabs = (!! ~~ settings.show_pack_tabs)? true : false;
 
 			this.settings.max_level = ((~~ settings.max_level) > 0)? (~~ settings.max_level) : this.settings.max_level;
-			this.settings.xp_modifier = (Math.abs(parseFloat(settings.xp_modifier)) > 0)? (Math.abs(parseFloat(settings.xp_modifier))) : this.settings.xp_modifier;
+
+			this.settings.xp_modifier = (Math.abs(~~ settings.xp_modifier) > 0)? Math.abs(~~ settings.xp_modifier) : this.settings.xp_modifier;
 
 			this.settings.bronze_xp = (~~ settings.bronze_xp)? (~~ settings.bronze_xp) : this.settings.bronze_xp;
 			this.settings.silver_xp = (~~ settings.silver_xp)? (~~ settings.silver_xp) : this.settings.silver_xp;
