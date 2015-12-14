@@ -9,18 +9,43 @@ trophies.Data = (function(){
 		this.user_id = user_id;
 
 		/**
-		 * @property {Object} trophy_data Data object for the user, contains all data for each pack (trophies earned, and other
-		 * random data that may be needed for that pack).
+		 * @property {Object} trophy_data Data stored in the key.
 		 */
 
 		this.trophy_data = {};
+
+		/**
+		 * @property {Object} trophy_local_data Data stored in local storage.
+		 */
+
 		this.trophy_local_data = {};
-		this.trophy_merged_data = {};
+
+		/**
+		 * @property {Object} user_trophies Internally used when doing calculations for stats.
+		 */
+
 		this.user_trophies = {};
+
+		/**
+		 * Holds stats that is populated when they are manually calculated.
+		 *
+		 * @property {Object} stats
+		 * @property {Number} stats.total_trophies
+		 * @property {Number} stats.total_points
+		 * @property {Number} stats.current_level
+		 * @property {Number} stats.next_level
+		 * @property {Number} stats.level_percentage
+		 * @property {Boolean} stats.maxed
+		 *
+		 * @property {Object} stats.cups Holds cup stats
+		 * @property {Number} stats.cups.total
+		 * @property {Number} stats.cups.bronze
+		 * @property {Number} stats.cups.silver
+		 * @property {Number} stats.cups.gold
+		 */
 
 		this.stats = {
 
-			earned_trophies: [],
 			total_trophies: 0,
 			total_points: 0,
 			current_level: 1,
@@ -41,7 +66,29 @@ trophies.Data = (function(){
 
 		var self = this;
 
+		/**
+		 * This can be called at anytime if you need to sync the data from local to the keys.
+		 * When this is called, 2 events are triggered.
+		 *
+		 * Basically what this does, is loop over all packs and checks if there is local data.  If there
+		 * is local data, then it merges that into the key data for that pack and clears out the local data.
+		 * Then we loop over the packs again, but this time for key data.  Simple.
+		 *
+		 *
+		 * @param {String} hook The hook we are using for this key.
+		 * @param {Boolean} skip_key_update We can skip updating the key and sync from local to keys without saving.
+		 * @param {Object} callbacks If not hooking, we can use callbacks (see http://yootil.pixeldepth.net/#!/api/yootil.key-method-set).
+		 */
+
 		this.sync_to_keys = function(hook, skip_key_update, callbacks){
+
+			/**
+			 * Triggers before the data is synced to keys.
+			 *
+			 * @event trophies.before_syncing
+			 */
+
+			$(trophies.events).trigger("trophies.before_syncing", [this, hook]);
 
 			// Update all pack keys with the data and trophies
 
@@ -124,17 +171,72 @@ trophies.Data = (function(){
 			}
 
 
+			/**
+			 * Triggers after the data is synced to keys.
+			 *
+			 * @event trophies.after_syncing
+			 */
+
+			$(trophies.events).trigger("trophies.after_syncing", [this, hook]);
+		};
+
+		/**
+		 * Saves just local data for all packs or specific pack.
+		 *
+		 * @param {String} pack Can save a specific pack if needed.
+		 */
+
+		this.save_local = function(pack){
+			if(pack){
+				var pack_info = trophies.utils.get.pack(pack.plugin_id);
+
+				if(pack_info && pack_info.plugin_key){
+					yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+				}
+			} else {
+				if(trophies.packs.length){
+					for(var pack in trophies.packs){
+						var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
+
+						if(pack_info && pack_info.plugin_key){
+							yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+						}
+					}
+				}
+			}
 		};
 
 		this.add = {
+
+			/**
+			 * Adds data to a pack for key object.
+			 *
+			 * @param {String} pack
+			 * @param {Object} data
+			 */
 
 			pack_data: function(pack, data){
 				self.trophy_data[pack] = data;
 			},
 
+			/**
+			 * Adds data to a pack for the local object.
+			 *
+			 * @param {String} pack
+			 * @param {Object} data
+			 */
+
 			pack_local_data: function(pack, data){
 				self.trophy_local_data[pack] = data;
 			},
+
+			/**
+			 * Adds a trophy to pack data, local or key data.
+			 *
+			 * @param {Object} trophy
+			 * @param {Boolean} data Pass true to add to key object.
+			 * @param {Boolean} local Pass true to add to local data object.
+			 */
 
 			trophy: function(trophy, data, local){
 				if(trophy && trophy.id && trophy.pack){
@@ -172,6 +274,14 @@ trophies.Data = (function(){
 
 		this.pack = {
 
+			/**
+			 * Checks to see if a pack exists.
+			 *
+			 * @param {String} pack
+			 * @param {Boolean} local Check local or key object.
+			 * @return {Boolean}
+			 */
+
 			exists: function(pack,  local){
 				if(!self[((local)? "trophy_local_data" : "trophy_data")][pack]){
 					return false;
@@ -179,6 +289,13 @@ trophies.Data = (function(){
 
 				return true;
 			},
+
+			/**
+			 * Creates a new pack object.
+			 *
+			 * @param {String} pack
+			 * @param {Boolean} local Create in local.
+			 */
 
 			create: function(pack, local){
 				var the_data = self[((local)? "trophy_local_data" : "trophy_data")];
@@ -204,13 +321,32 @@ trophies.Data = (function(){
 
 		this.get = {
 
+			/**
+			 * Gets the key data for all packs.
+			 *
+			 * @return {Object}
+			 */
+
 			data: function(){
 				return self.trophy_data;
 			},
 
+			/**
+			 * Gets the local data for all packs.
+			 *
+			 * @return {Object}
+			 */
+
 			local_data: function(){
 				return self.trophy_local_data;
 			},
+
+			/**
+			 * Gets a pack from the key data.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
 
 			pack: function(pack_id){
 				if(self.trophy_data[pack_id]){
@@ -220,6 +356,13 @@ trophies.Data = (function(){
 				return null;
 			},
 
+			/**
+			 * Gets a pack from the local data.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
+
 			local_pack: function(pack_id){
 				if(self.trophy_local_data[pack_id]){
 					return self.trophy_local_data[pack_id];
@@ -227,6 +370,13 @@ trophies.Data = (function(){
 
 				return null;
 			},
+
+			/**
+			 * Gets the trophies for a pack from the key object.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
 
 			pack_trophies: function(pack_id){
 				var pack_info = trophies.utils.get.pack(pack_id);
@@ -240,6 +390,13 @@ trophies.Data = (function(){
 				return null;
 			},
 
+			/**
+			 * Gets the trophies for a pack from the local object.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
+
 			local_pack_trophies: function(pack_id){
 				var pack_info = trophies.utils.get.pack(pack_id);
 
@@ -251,6 +408,13 @@ trophies.Data = (function(){
 
 				return null;
 			},
+
+			/**
+			 * Gets the custom data for a pack from the key object.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
 
 			pack_data: function(pack_id){
 				var pack_info = trophies.utils.get.pack(pack_id);
@@ -264,6 +428,13 @@ trophies.Data = (function(){
 				return {};
 			},
 
+			/**
+			 * Gets the custom data for a pack from the local object.
+			 *
+			 * @param {String} pack_id
+			 * @return {Object}
+			 */
+
 			local_pack_data: function(pack_id){
 				var pack_info = trophies.utils.get.pack(pack_id);
 
@@ -275,6 +446,15 @@ trophies.Data = (function(){
 
 				return {};
 			},
+
+			/**
+			 * Gets a trophy.
+			 *
+			 * @param {Object} trophy
+			 * @param {Boolean} local
+			 * @param {Boolean} anywhere Gets from local or key.
+			 * @return {Object}
+			 */
 
 			trophy: function(trophy, local, anywhere){
 				var pack_info = trophies.utils.get.pack(trophy.pack);
@@ -306,33 +486,61 @@ trophies.Data = (function(){
 
 			stat: {
 
-				earned_trophies: function(){
-					return self.stats.earned_trophies;
-				},
+				/**
+				 * Total trophies.
+				 *
+				 * @return {Number}
+				 */
 
 				total_trophies: function(){
 					return self.stats.total_trophies;
 				},
 
+				/**
+				 * Total points / xp.
+				 *
+				 * @return {Number}
+				 */
+
 				total_points: function(){
 					return self.stats.total_points;
 				},
 
-				total_xp: function(){
-					return self.stats.total_points;
-				},
+				/**
+				 * Current trophy level.
+				 *
+				 * @return {Number}
+				 */
 
 				current_level: function(){
 					return self.stats.current_level;
 				},
 
+				/**
+				 * Next trophy level.
+				 *
+				 * @return {Number}
+				 */
+
 				next_level: function(){
 					return self.stats.next_level;
 				},
 
+				/**
+				 * Current progress of level.
+				 *
+				 * @return {Number}
+				 */
+
 				level_percentage: function(){
 					return self.stats.level_percentage;
 				},
+
+				/**
+				 * Is the user at max level.
+				 *
+				 * @return {Boolean}
+				 */
 
 				maxed: function(){
 					return this.stats.maxed;
@@ -340,13 +548,31 @@ trophies.Data = (function(){
 
 				cups: {
 
+					/**
+					 * Total bronze trophies earned.
+					 *
+					 * @return {Number}
+					 */
+
 					bronze: function(){
 						return self.stats.cups.bronze;
 					},
 
+					/**
+					 * Total silver trophies earned.
+					 *
+					 * @return {Number}
+					 */
+
 					silver: function(){
 						return self.stats.cups.silver;
 					},
+
+					/**
+					 * Total gold trophies earned.
+					 *
+					 * @return {Number}
+					 */
 
 					gold: function(){
 						return self.stats.cups.gold;
@@ -356,6 +582,12 @@ trophies.Data = (function(){
 
 			},
 
+			/**
+			 * lookup object for this users trophies.
+			 *
+			 * @return {Object}
+			 */
+
 			trophies: function(){
 				return self.user_trophies;
 			}
@@ -364,21 +596,54 @@ trophies.Data = (function(){
 
 		this.set = {
 
+			/**
+			 * Sets the trophy data (all packs).
+			 *
+			 * @param {Object} data
+			 */
+
 			data: function(data){
 				self.trophy_data = data;
 			},
+
+			/**
+			 * Sets the local trophy data (all packs).
+			 *
+			 * @param {Object} data
+			 */
 
 			local_data: function(data){
 				self.trophy_local_data = data;
 			},
 
+			/**
+			 * Sets the pack data for key object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} data
+			 */
+
 			pack: function(pack_id, pack){
 				self.trophy_data[pack_id] = pack;
 			},
 
+			/**
+			 * Sets the pack data for local object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} data
+			 */
+
 			local_pack: function(pack_id, pack){
 				self.trophy_local_data[pack_id] = pack;
 			},
+
+			/**
+			 * Sets the pack trophies for key object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} pack_trophies
+			 */
 
 			pack_trophies: function(pack_id, pack_trophies){
 				var pack_info = trophies.utils.get.pack(pack_id);
@@ -394,6 +659,13 @@ trophies.Data = (function(){
 				return null;
 			},
 
+			/**
+			 * Sets the pack trophies for the local object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} pack_trophies
+			 */
+
 			local_pack_trophies: function(pack_id, pack_trophies){
 				var pack_info = trophies.utils.get.pack(pack_id);
 
@@ -408,6 +680,13 @@ trophies.Data = (function(){
 				return null;
 			},
 
+			/**
+			 * Sets the pack data for the key object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} pack_data
+			 */
+
 			pack_data: function(pack_id, pack_data){
 				var pack_info = trophies.utils.get.pack(pack_id);
 
@@ -421,6 +700,13 @@ trophies.Data = (function(){
 
 				return null;
 			},
+
+			/**
+			 * Sets the pack data for the local object.
+			 *
+			 * @param {String} pack_id
+			 * @param {Object} pack_data
+			 */
 
 			local_pack_data: function(pack_id, pack_data){
 				var pack_info = trophies.utils.get.pack(pack_id);
@@ -437,6 +723,12 @@ trophies.Data = (function(){
 			},
 
 			trophy: {
+
+				/**
+				 * Marks a trophy as seen, and updates local storage.
+				 *
+				 * @param {Object} trophy
+				 */
 
 				seen: function(trophy){
 					var pack_info = trophies.utils.get.pack(trophy.pack);
@@ -460,6 +752,13 @@ trophies.Data = (function(){
 
 		this.remove = {
 
+			/**
+			 * Removes a trophy.
+			 *
+			 * @param {Object} trophy
+			 * @param {Boolean} local Remove from local, otherwise it will remove from key data.
+			 */
+
 			trophy: function(trophy, local){
 				var pack_info = trophies.utils.get.pack(trophy.pack);
 
@@ -479,6 +778,13 @@ trophies.Data = (function(){
 
 		this.clear = {
 
+			/**
+			 * Clears everything.
+			 *
+			 * @param {Boolean} skip_key_update Pass true to not save the keys.
+			 * @param {Object} callbacks
+			 */
+
 			everything: function(skip_key_update, callbacks){
 				for(var pack in trophies.packs){
 					var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
@@ -489,7 +795,6 @@ trophies.Data = (function(){
 
 							self.trophy_data = {};
 							self.trophy_local_data = {};
-							self.trophy_merged_data = {};
 							self.user_trophies = {};
 
 							if(!skip_key_update){
@@ -504,6 +809,13 @@ trophies.Data = (function(){
 
 		this.trophy = {
 
+			/**
+			 * Checks to see if a trophy has been earned.
+			 *
+			 * @param {Object} trophy
+			 * @return {Boolean}
+			 */
+
 			earned: function(trophy){
 				if(self.trophy.exists(trophy) || self.trophy.exists(trophy, true)){
 					return true;
@@ -511,6 +823,13 @@ trophies.Data = (function(){
 
 				return false;
 			},
+
+			/**
+			 * Checks to see if a trophy has been seen.
+			 *
+			 * @param {Object} trophy
+			 * @return {Boolean}
+			 */
 
 			seen: function(trophy){
 				var user_trophy = self.get.trophy(trophy, true);
@@ -526,6 +845,14 @@ trophies.Data = (function(){
 				return false;
 			},
 
+			/**
+			 * Checks to see if a trophy exists.
+			 *
+			 * @param {Object} trophy
+			 * @param {Boolean} local Check in local instead.
+			 * @return {Boolean}
+			 */
+
 			exists: function(trophy, local){
 				var store = self[((local)? "trophy_local_data" : "trophy_data")];
 				var pack_info = trophies.utils.get.pack(trophy.pack);
@@ -540,6 +867,12 @@ trophies.Data = (function(){
 			}
 
 		};
+
+		/**
+		 * Calculates all the stats for the user.
+		 *
+		 * @param {Boolean} force_recalculations If you need to recalculate, pass true.
+		 */
 
 		this.calculate_stats = function(force_recalculations){
 			if(this.stats.calculated && !force_recalculations){

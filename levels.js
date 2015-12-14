@@ -1,5 +1,11 @@
 $.extend(trophies, {
 
+	/**
+	 * This generates the XP levels.  A very basic way, but seems to work Ok.
+	 * Ideally levels should ramp up nicely, but forums have control over the modifier
+	 * if they want to make it slower or quicker to progress.
+	 */
+
 	generate_xp_levels: function(){
 		var levels = [];
 		var modifier = this.settings.xp_modifier / 100;

@@ -1,12 +1,23 @@
 $.extend(trophies, {
 
+	/**
+	 * Creates a tab on the profile.
+	 */
+
 	create_tab: function(){
 		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
 		var first_box = $("form.form_user_status .content-box:first");
 		var custom = $("#trophies-custom-profile");
 
 		if(first_box.length || custom.length == 1){
+
+			// We might be looking at a members profile, so try and get the
+			// member id first.
+
 			var the_user = yootil.page.member.id() || yootil.user.id();
+
+			// This is not done on every page, we do this manually, otherwise
+			// it's a waste doing it for no reason.
 
 			this.data(the_user).calculate_stats();
 
@@ -17,8 +28,13 @@ $.extend(trophies, {
 				trophy_stats.html(stats_html);
 			}
 
+			// If not active, then we are on the profile
+			// summary and not the actual full trophy page.
+
 			if(!active){
 				var quick_list = null;
+
+				// Check if we need to show the quick list of trophies
 
 				if(this.settings.show_trophies_on_profile){
 					var quick_list_html = this.build_quick_trophy_list();
@@ -77,6 +93,14 @@ $.extend(trophies, {
 		}
 	},
 
+	/**
+	 * Some fun animations of the stats while the page is loading to give
+	 * the user that feeling the numbers are being crunched and worked out.
+	 *
+	 * @param {Number} user_id
+	 * @param {Boolean} active If true, then on the trophies page, speed up animations
+	 */
+
 	setup_animations: function(the_user, active){
 
 		// Handle basic stats
@@ -103,8 +127,15 @@ $.extend(trophies, {
 			spans.each(function(){
 				$(this).text($(this).attr("data-value"));
 			});
+
+			$(".trophy-stats-progress-highlight").attr("title", trophies.data(the_user).get.stat.level_percentage() + "%");
 		});
 	},
+
+	/**
+	 * If there are other packs apart from the core, then we want to show the
+	 * pack tab so users can quickly filter trophies.
+	 */
 
 	create_pack_tabs: function(){
 		var the_packs = this.packs;
@@ -136,6 +167,12 @@ $.extend(trophies, {
 		tabs_html.appendTo($("form.form_user_status").parent());
 	},
 
+	/**
+	 * Handles showing and hiding of trophies when switching between tabs.
+	 *
+	 * @param {Object} li The tab being clicked on that has the data (id attr)
+	 */
+
 	switch_trophy_pack_list: function(li){
 		var pack_id = li.attr("id").split("trophy_pack_tab_")[1];
 		var all_lis = li.parent().children();
@@ -161,6 +198,12 @@ $.extend(trophies, {
 
 	},
 
+	/**
+	 * Handles building the full trophy list for the trophy page.
+	 *
+	 * @return {String}
+	 */
+
 	build_trophy_list: function(){
 		var trophy_list = "";
 		var counter = 0;
@@ -168,12 +211,17 @@ $.extend(trophies, {
 		var the_user = yootil.page.member.id() || yootil.user.id();
 		var list = this.utils.get.all_trophies(the_user, true);
 
+		// The list is every trophy available, not earned by the user.
+
 		for(var trophy in list){
 			if(trophy.disabled){
 				continue;
 			}
 
+			// Check if it has been earned.
+
 			var has_earned = (this.data(the_user).trophy.earned(list[trophy]))? true : false;
+
 			var cup_big = this.images.bronze_big;
 			var cup_small = this.images.bronze;
 			var trophy_img = (has_earned)? this.utils.fetch_image(list[trophy]) : this.images["locked"];
@@ -240,6 +288,14 @@ $.extend(trophies, {
 		return trophy_list;
 	},
 
+	/**
+	 * Creates the date string for when the trophy was earned.
+	 *
+	 * @param {Object} user_trophy The earned trophy to build the date from.
+	 * @param {Boolean} time_24 User setting for 24 hour time or not.
+	 * @return {String}
+	 */
+
 	get_trophy_date_str: function(user_trophy, time_24){
 		var str = "";
 
@@ -271,7 +327,12 @@ $.extend(trophies, {
 		return str;
 	},
 
-	// This appears on the trophy page and the profile page
+	/**
+	 * Creates the trophy stats.  This shows on the profile and
+	 * the full trophy page.
+	 *
+	 * @return {String}
+	 */
 
 	create_trophy_stats: function(){
 		var data = this.data(yootil.page.member.id() || yootil.user.id());
@@ -304,7 +365,7 @@ $.extend(trophies, {
 									html += "<br style='clear: both' />";
 								html += "</div>";
 								html += "<div class='trophy-stats-progress-bar'>";
-									html += "<div class='trophy-stats-progress-highlight' style='width: 0%;'>&nbsp;</div>";
+									html += "<div class='trophy-stats-progress-highlight trophies-tiptip' style='width: 0%;'>&nbsp;</div>";
 								html += "</div>";
 							html += "</div>";
 							html += "<div class='trophy-cell'> &nbsp; </div>";
@@ -316,6 +377,13 @@ $.extend(trophies, {
 
 		return html;
 	},
+
+	/**
+	 * Builds a quick trophy list for the profile page to show which
+	 * trophies the user has earned.
+	 *
+	 * @return {String}
+	 */
 
 	build_quick_trophy_list: function(){
 		var html = "";

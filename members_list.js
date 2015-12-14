@@ -1,5 +1,11 @@
 $.extend(trophies, {
 
+	/**
+	 * If enabled, then we should the cups + totals in the members list.
+	 *
+	 * @param {Boolean} page_ran If true, then the user lookup table doesn't get refreshed.
+	 */
+
 	show_in_members_list: function(page_ran){
 		if($("td[class^=trophies-members-list]").length){
 			return;

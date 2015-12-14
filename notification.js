@@ -2,7 +2,17 @@ $.extend(trophies, {
 
 	template: {
 
+		/**
+		 * Try to cache templates so we don't have to keep building and assigning to variables
+		 *
+		 * @property {String} cache
+		 */
+
 		cache: "",
+
+		/**
+		 * This is the PS3 theme (meh, it's Ok).
+		 */
 
 		ps3: function(){
 			if(this.cache){
@@ -31,6 +41,10 @@ $.extend(trophies, {
 			return tpl;
 		},
 
+		/**
+		 * PS4 theme (I like this one, so it is the default)
+		 */
+
 		ps4: function(){
 			if(this.cache){
 				return this.cache;
@@ -58,6 +72,13 @@ $.extend(trophies, {
 			return tpl;
 		},
 
+		/**
+		 * If the user has created a custom template then we don't
+		 * need to build anything here.
+		 *
+		 * @param {String} custom_tpl The template (from the settings).
+		 */
+
 		custom: function(custom_tpl){
 			if(this.cache){
 				return this.cache;
@@ -74,7 +95,7 @@ $.extend(trophies, {
 	 * Creates the trophy notification html.
 	 *
 	 * @param {Object} trophy The trophy data to be shown to the user.
-	 * @returns {String}
+	 * @returns {Object} The template jQuery wrapped.
 	 */
 
 	create_notification: function(trophy){
@@ -84,6 +105,15 @@ $.extend(trophies, {
 
 		return notification;
 	},
+
+	/**
+	 * Here we parse the template.  Replace any template variables with the data.
+	 *
+	 * @param {String} tpl The template to use.
+	 * @param {Object} trophy The trophy for this notification.
+	 * @param {String} position The CSS class for the position of the notification.
+	 * @return {Object} The notification parsed and jQuery wrapped ready for DOM insertion.
+	 */
 
 	parse_template: function(tpl, trophy, position){
 		var tmp_trophy = $.extend({}, trophy);
@@ -113,6 +143,12 @@ $.extend(trophies, {
 		return $(tpl).attr("id", "trophy-" + trophy.id).attr("data-pack", trophy.pack).hide();
 	},
 
+	/**
+	 * Gets the template chosen by the forum.  Default is PS4.
+	 *
+	 * @return {String}
+	 */
+
 	get_template: function(){
 		if(this.settings.notification_custom_enabled && this.settings.notification_custom_tpl.length){
 			return this.template["custom"](this.settings.notification_custom_tpl);
@@ -134,6 +170,12 @@ $.extend(trophies, {
 
 		return this.template[tpl]();
 	},
+
+	/**
+	 * Gets the position class based on the setting .
+	 *
+	 * @return {String}
+	 */
 
 	get_position_klass: function(){
 		var klass = "top-right";
@@ -157,20 +199,41 @@ $.extend(trophies, {
 		return "trophy-notification-pos-" + klass;
 	},
 
+	/**
+	 * Handles showing the trophy notification to the user.
+	 *
+	 * @param {Object} trophy The trophy the user has earned.
+	 */
+
 	show_notification: function(trophy){
+
+		// Fetch the data for this user
+
 		var data = this.data(yootil.user.id());
+
+		// Has the user already seen this notification?
 
 		if(data.trophy.seen(trophy)){
 			return;
 		}
 
+		// Add the trophy to local and data objects.
+
 		data.add.trophy(trophy, true, true);
+
+		// Create the notification (appended to the DOM).
+
 		this.create_notification(trophy);
 
 		var self = this;
 
+		// Queue it, in case there are multiple trophies earned.
+
 		this.queue.add(function(){
 			$("#trophy-" + trophy.id).delay(200).fadeIn("normal", function(){
+
+				// Set the trophy as seen once the notification has shown up.
+
 				data.set.trophy.seen(trophy);
 			}).delay(self.settings.notification_duration).fadeOut("normal", function(){
 				$(this).remove();
@@ -179,15 +242,35 @@ $.extend(trophies, {
 		});
 	},
 
+	/**
+	 * Handles showing trophies in local that have not been seen yet, but earned.
+	 */
+
 	show_unseen_trophies: function(){
+
+		// Get local data
+
 		var local_data = this.data(yootil.user.id()).get.local_data();
 
+		// Loop over all packs in the local data
+
 		for(var pack in local_data){
+
+			// Make sure the pack still exists (local data can hang around)
+
 			if(this.utils.pack.exists(pack)){
+
+				// Get the pack info
+
 				var pack_info = trophies.utils.get.pack(pack);
+
+				// Make sure we have pack info, and check the trophies key does exist
 
 				if(pack_info && local_data[pack_info.pack][pack_info.trophies_key]){
 					var local_trophies = local_data[pack_info.pack][pack_info.trophies_key];
+
+					// Loop over the trophies and show the notification if the trophy
+					// still exists.
 
 					for(var trophy in local_trophies){
 						var the_trophy = {

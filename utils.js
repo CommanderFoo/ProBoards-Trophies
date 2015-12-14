@@ -2,6 +2,13 @@ trophies.utils = {
 
 	trophy: {
 
+		/**
+		 * Checks to see if a trophy exists.
+		 *
+		 * @param {Object} trophy The trophy to check.
+		 * @return {Boolean}
+		 */
+
 		exists: function(trophy){
 			if(!trophy || !trophy.id || !trophy.pack || !trophies.lookup[trophy.pack] || !trophies.lookup[trophy.pack][trophy.id]){
 				return false;
@@ -28,6 +35,13 @@ trophies.utils = {
 		return data;
 	},
 
+	/**
+	 * Fetches the image for the trophy.  If not found, a "missing" image is used.
+	 *
+	 * @param {Object} trophy The trophy.
+	 * @return {String}
+	 */
+
 	fetch_image: function(trophy){
 		var pack_info = this.get.pack(trophy.pack);
 
@@ -44,6 +58,13 @@ trophies.utils = {
 
 	get: {
 
+		/**
+		 * Get a pack that is in the register.
+		 *
+		 * @param {String} pack The pack ID
+		 * @return {Object}
+		 */
+
 		pack: function(pack){
 			if(TROPHY_REGISTER[pack]){
 				return TROPHY_REGISTER[pack];
@@ -51,6 +72,14 @@ trophies.utils = {
 
 			return null;
 		},
+
+		/**
+		 * Get a trophy from a pack.
+		 *
+		 * @param {String} pack Pack ID
+		 * @param {Number} id The trophy ID
+		 * @return {Object} If exists, then the trophy is returned.
+		 */
 
 		trophy: function(pack, id){
 			if(trophies.utils.pack.exists(pack)){
@@ -72,6 +101,14 @@ trophies.utils = {
 
 			return false;
 		},
+
+		/**
+		 * Gets all the trophies a user has earned.
+		 *
+		 * @param {Number} user
+		 * @param {Boolean} sort Tries to sort the trophies.
+		 * @param {Array}
+		 */
 
 		trophies: function(user, sort){
 			var list = [];
@@ -108,6 +145,13 @@ trophies.utils = {
 			return list;
 		},
 
+		/**
+		 * Gets all trophies in all packs as one list.
+		 *
+		 * @param {Boolean} sort Tries to sort them.
+		 * @return {Array}
+		 */
+
 		all_trophies: function(sort){
 			var all_trophies = [];
 
@@ -137,6 +181,13 @@ trophies.utils = {
 	},
 
 	pack: {
+
+		/**
+		 * Checks if a pack exists.
+		 *
+		 * @param {String} pack The pack ID
+		 * @return {Boolean}
+		 */
 
 		exists: function(pack){
 			if($.inArray(pack, trophies.packs) > -1){

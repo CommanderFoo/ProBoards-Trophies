@@ -49,17 +49,38 @@ $.extend(trophies, {
 	user_data_table: {},
 
 	/**
-	 * @propety {Boolean} showing Used when the notification is showing.
-	 */
-
-	showing: false,
-
-	/**
 	 * @property {Object} settings Default settings which can be overwritten from setup.
 	 * @property {Boolean} settings.notification_disable
-	 * @property {Boolean} settings.show_on_profile
-	 * @property {Boolean} settings.show_in_mini_profile
-	 * @property {Boolean} settings.show_on_members_list
+	 * @property {Number} settings.notification_position Position of the notification when it shows.
+	 * @property {Number} settings.notification_theme
+	 * @property {Number} settings.notification_duration How long the notification shows for.
+	 * @property {Boolean} settings.notification_custom_enabled
+	 * @property {String} settings.notification_custom_tpl Custom template created by the user.
+	 *
+	 * @property {Boolean} settings.show_stats_on_profile
+	 * @property {Boolean} settings.show_in_members_list
+	 * @property {Boolean} settings.show_trophies_on_profile
+	 *
+	 * @property {Boolean} settings.show_pack_tabs
+	 *
+	 * @property {Boolean} settings.show_mini_profile_total_trophies
+	 * @property {Boolean} settings.show_mini_profile_total_cups
+	 * @property {Boolean} settings.show_mini_profile_current_level
+	 *
+	 * @property {Boolean} settings.show_date
+	 * @property {Boolean} settings.show_time
+	 *
+	 * @property {Boolean} settings.show_details
+	 *
+	 * @property {Number} settings.stats_animation_speed_profile
+	 * @property {Number} settings.stats_animation_speed_page
+	 *
+	 * @property {Number} settings.max_level
+	 * @property {Number} settings.xp_modifier
+	 *
+	 * @property {Number} settings.bronze_xp
+	 * @property {Number} settings.silver_xp
+	 * @property {Number} settings.gold_xp
 	 */
 
 	settings: {
@@ -74,6 +95,7 @@ $.extend(trophies, {
 		show_stats_on_profile: true,
 		show_in_members_list: true,
 		show_trophies_on_profile: true,
+
 		show_pack_tabs: true,
 
 		show_mini_profile_total_trophies: true,
@@ -97,6 +119,10 @@ $.extend(trophies, {
 
 	},
 
+	/**
+	 * @property {Object} events
+	 */
+
 	events: {},
 
 	/**
@@ -117,17 +143,32 @@ $.extend(trophies, {
 
 	queue: null,
 
+	/**
+	 * @property {Object} lookup Pack lookup table.
+	 */
+
 	lookup: {},
+
+	/**
+	 * @property {Array} packs The packs installed.
+	 */
 
 	packs: [],
 
+	/**
+	 * @property {Array} inits An array of functions to call for the registered packs.
+	 */
+
 	inits: [],
+
+	/**
+	 * @property {Boolean} submit_fired Used when submitting a form to tell if it has been submitted or not.
+	 */
 
 	submit_fired: false,
 
 	/**
-	 * Starts the magic.
-	 * Various this happening here.  We do Yootil checks, setup user lookup table, and other things.
+	 * In here we do a few things like setup, generate XP levels, and also the ready event is called here.
 	 */
 
 	init: function(){
@@ -144,6 +185,21 @@ $.extend(trophies, {
 
 		return this;
 	},
+
+	/**
+	 * Gets current version of the plugin.
+	 *
+	 * @return {String}
+	 */
+
+	version: function(){
+		return this.VERSION;
+	},
+
+	/**
+	 * Handles registering packs, setting up the data tale, and a few other things once
+	 * the DOM is ready.
+	 */
 
 	ready: function(){
 		this.register_trophy_packs();
@@ -169,6 +225,8 @@ $.extend(trophies, {
 				yootil.ajax.after_search(this.show_in_mini_profile, this);
 			}
 		}
+
+		// Tip Tip is a jQuery plugin that ProBoards uses.
 
 		$(".trophies-tiptip").tipTip({
 
@@ -230,6 +288,10 @@ $.extend(trophies, {
 			this.settings.show_mini_profile_current_level = (!! ~~ settings.show_trophy_level)? true : false;
 		}
 	},
+
+	/**
+	 * This looks for packs that have been registered, and adds them to the packs and lookup properties.
+	 */
 
 	register_trophy_packs: function(){
 		if(typeof TROPHY_REGISTER != "undefined"){
@@ -301,6 +363,12 @@ $.extend(trophies, {
 		}
 	},
 
+	/**
+	 * Packs need to register trophies to the lookup table.  This is done automatically.
+	 *
+	 * @param {Object} trophy The trophy to be registered.
+	 */
+
 	register_trophy: function(trophy){
 		if(typeof trophy == "undefined" || typeof trophy.id == "undefined" || !(~~ trophy.id)){
 			return;
@@ -321,6 +389,8 @@ $.extend(trophies, {
 
 	/**
 	 * Binds a submit handler to the posting and messaging forms for moving local data to the key.
+	 *
+	 * If a submit should fail (i.e no message), then the sync will not happen again.
 	 */
 
 	bind_events: function(){
@@ -344,24 +414,12 @@ $.extend(trophies, {
 		if(the_form && the_form.length){
 			the_form.on("submit", $.proxy(function(){
 				if(!this.submit_fired){
-					$(this.events).trigger("trophies.form_submit", [this.data(yootil.user.id()), the_form, hook]);
-
 					this.data(yootil.user.id()).sync_to_keys(hook);
 					this.submit_fired = true;
 				}
 			}, this));
 
 		}
-	},
-
-	/**
-	 * Gets current version of the plugin.
-	 *
-	 * @return {String}
-	 */
-
-	version: function(){
-		return this.VERSION;
 	},
 
 	/**
@@ -450,6 +508,10 @@ $.extend(trophies, {
 
 		return user_data;
 	},
+
+	/**
+	 * Calls any "init" functions registered by packs.
+	 */
 
 	call_pack_inits: function(){
 		for(var k in this.inits){
