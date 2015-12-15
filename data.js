@@ -969,7 +969,7 @@ trophies.Data = (function(){
 			if(this.stats.total_points > 0){
 				if(this.stats.total_points > trophies.levels[trophies.levels.length - 1]){
 					this.stats.current_level = trophies.levels.length;
-					this.stats.next_level = this.stats.current_level + 1
+					this.stats.next_level = this.stats.current_level + 1;
 
 					this.stats.maxed = true;
 				} else {
@@ -988,8 +988,8 @@ trophies.Data = (function(){
 			if(!this.stats.maxed){
 				var next_level_points = trophies.levels[this.stats.next_level - 1];
 				var current_level_points = trophies.levels[this.stats.current_level - 1];
-				var points_so_far = (this.stats.total_points % current_level_points);
-				var diff = next_level_points % current_level_points
+				var points_so_far = (this.stats.total_points % current_level_points) || this.stats.total_points;
+				var diff = (next_level_points % current_level_points) || next_level_points;
 
 				if(next_level_points){
 					percentage = ((points_so_far / diff) * 100).toFixed(0);
