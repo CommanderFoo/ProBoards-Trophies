@@ -517,7 +517,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			image: "time_5mins",
 			description: "Been here for at least 5 minutes",
 			disabled: false,
-			interval: 10000,
+			interval: 15000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
 
@@ -530,7 +530,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				var tracked_time = local_pack_data.tt || 0;
 				var mins = Math.floor(tracked_time / 60);
 
-				if(mins >= 1){
+				if(mins >= 5){
 					this.show_notification(trophy);
 				}
 			}
@@ -545,7 +545,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			image: "time_30mins",
 			description: "Been here for at least 30 minutes",
 			disabled: false,
-			interval: 10000,
+			interval: 15000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
 
@@ -573,7 +573,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			image: "time_1hr",
 			description: "Been here for at least 1 hour",
 			disabled: false,
-			interval: 10000,
+			interval: 15000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
 
@@ -601,7 +601,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			image: "time_12hrs",
 			description: "Been here for at least 12 hours",
 			disabled: false,
-			interval: 10000,
+			interval: 15000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
 
