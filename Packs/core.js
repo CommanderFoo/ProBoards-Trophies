@@ -18,96 +18,140 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 	trophies_data_key: "d",
 
-	init: function(pack, events){
-		var user_data = trophies.data(yootil.user.id());
-		var pack_data = user_data.get.pack_data(pack.plugin_id);
-		var local_pack_data = user_data.get.local_pack_data(pack.plugin_id);
+	init: function(pack, events, self){
+		self.pack = pack;
+		self.events = events;
+		self.user_data = trophies.data(yootil.user.id());
+		self.pack_data = self.user_data.get.pack_data(pack.plugin_id);
+		self.local_pack_data = self.user_data.get.local_pack_data(pack.plugin_id);
 
-		if(!pack_data.st && !local_pack_data.st){
-			local_pack_data.st = yootil.timestamp();
-		} else if(pack_data.st){
-			delete local_pack_data.st;
-		}
+		// Capture read topics
 
-		user_data.save_local(pack);
+		self.capture_topics_read();
 
-		// Handle reading topics
-		// We perform another update to local but delayed.
+		// Need to capture logged in time
 
-		// Check for pack data
-		// This will overwrite pack data when an action
-		// is performed.
+		self.track_time();
 
-		var read = 0;
+		// Perform intervals
 
-		if(pack_data.tr){
-			read = pack_data.tr;
-		}
+		// Both topics and time methods above need to update
+		// local data, so do that here for both.
 
-		// Now see what's in local.  If there is nothing in local
-		// and we have pack data, then set local to pack data.
-		// Otherwise local has the right to overwrite pack data.
-
-		if(local_pack_data.tr){
-			read = local_pack_data.tr;
-		} else {
-			local_pack_data.tr = read;
-		}
-
-		// Check location; if reading a topic, increment counter
-		// and save to local.
-
-		if(yootil.location.thread()){
-
-			// Wait a little while to prevent people getting
-			// this trophy too quickly.
-
-			// We will do sync checking at some point so that
-			// a user can't just open 50 topics all in one go.
-
-			setTimeout(function(){
-				local_pack_data.tr ++;
-				user_data.save_local(pack);
-			}, 15000) // 15 seconds, then it will increment the counter
-		}
+		self.user_data.save_local(pack);
 
 		// Perform some stuff before keys are synced
 
-		$(events).on("trophies.before_syncing", function(evt, user_data, hook){
-			var pack_data = user_data.get.pack_data(pack.plugin_id);
-			var local_pack_data = user_data.get.local_pack_data(pack.plugin_id);
+		self.bind_sync_event();
 
-			if(yootil.location.posting_thread()){
+	},
 
-				// Topics posted
+	methods: {
 
-				if(!pack_data.tp){
-					pack_data.tp = 0;
+		capture_topics_read: function(){
+
+			// Check location; if reading a topic, increment counter
+			// and save to local.
+
+			if(yootil.location.thread()){
+
+				// Wait a little while to prevent people getting
+				// this trophy too quickly.
+
+				// We will do sync checking at some point so that
+				// a user can't just open 50 topics all in one go.
+
+				var self = this;
+
+				setTimeout(function(){
+
+					// Need to get latest pack data, as this can be updated outside
+					// at different times.
+
+					var pack_data = self.user_data.get.pack_data(self.pack.plugin_id);
+					var local_pack_data = self.user_data.get.local_pack_data(self.pack.plugin_id);
+					var read = (~~ (pack_data.tr))? pack_data.tr : 0;
+
+					if(~~ local_pack_data.tr){
+						read = local_pack_data.tr;
+					}
+
+					local_pack_data.tr = read + 1;
+
+					self.user_data.save_local(self.pack.plugin_id, local_pack_data);
+				}, 5000) // 5 seconds, then it will increment the counter
+			}
+		},
+
+		track_time: function(){
+
+			// Lets not do this if we know the time is never
+			// going to be over a certain number?  2 years seems fine.
+
+			var two_years = 63072000;
+
+			if((~~ this.pack_data.tt) > two_years || (~~ this.local_pack_data.tt) > two_years){
+				return;
+			}
+
+			var self = this;
+
+			setInterval(function(){
+
+				// Need to get latest pack data, as this can be updated outside
+				// at different times.
+
+				var pack_data = self.user_data.get.pack_data(self.pack.plugin_id);
+				var local_pack_data = self.user_data.get.local_pack_data(self.pack.plugin_id);
+				var tracked_time = (~~ pack_data.tt)? pack_data.tt : 0;
+
+				if(~~ local_pack_data.tt){
+					tracked_time = local_pack_data.tt;
 				}
 
-				pack_data.tp ++;
-			}
+				local_pack_data.tt = tracked_time + 10;
 
-			// Logged in start time
+				self.user_data.save_local(self.pack.plugin_id, local_pack_data);
+			}, 10000); // Increase time tracked every 10 seconds
 
-			var data_start_time = (pack_data.st)? pack_data.st : 0;
+		},
 
-			if(!data_start_time){
-				var local_data_start_time = (local_pack_data.st)? local_pack_data.st : 0;
-				var start_time = ((data_start_time)? data_start_time : local_data_start_time) || yootil.timestamp();
+		bind_sync_event: function(){
+			var self = this;
 
-				pack_data.st = start_time;
-			}
+			$(this.events).on("trophies.before_syncing", function(evt, user_data, hook){
+				var pack_data = self.user_data.get.pack_data(self.pack.plugin_id);
+				var local_pack_data = self.user_data.get.local_pack_data(self.pack.plugin_id);
 
-			// Handle topics read
+				if(yootil.location.posting_thread()){
 
-			if(local_pack_data.tr){
-				pack_data.tr = local_pack_data.tr;
-				local_pack_data.tr = 0;
-			}
+					// Topics posted
 
-			user_data.set.pack_data(pack.plugin_id, pack_data);
-		});
+					if(!pack_data.tp){
+						pack_data.tp = 0;
+					}
+
+					pack_data.tp ++;
+				}
+
+				// Tracked time
+
+				if(local_pack_data.tt){
+					pack_data.tt = local_pack_data.tt;
+					local_pack_data.tt = 0;
+				}
+
+				// Handle topics read
+
+				if(local_pack_data.tr){
+					pack_data.tr = local_pack_data.tr;
+					local_pack_data.tr = 0;
+				}
+
+				self.user_data.set.pack_data(self.pack.plugin_id, pack_data);
+			});
+		}
+
 	},
 
 	"trophies": [
@@ -132,7 +176,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "First Post",
 			image: "post_1",
-			description: "Made 1 post on the forum",
+			description: "Created 1 post",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -149,7 +193,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "10 Posts",
 			image: "post_10",
-			description: "Made 10 posts on the forum",
+			description: "Created 10 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -166,7 +210,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "25 Posts",
 			image: "post_25",
-			description: "Made 25 posts on the forum",
+			description: "Created 25 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -183,7 +227,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "50 Posts",
 			image: "post_50",
-			description: "Made 50 posts on the forum",
+			description: "Created 50 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -200,7 +244,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "Forum Century",
 			image: "post_100",
-			description: "Made 100 posts on the forum",
+			description: "Created 100 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -217,7 +261,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "Posting Maniac",
 			image: "post_250",
-			description: "Made 250 posts on the forum",
+			description: "Created 250 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -234,7 +278,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "Tree Fiddy",
 			image: "post_350",
-			description: "Made 350 posts on the forum",
+			description: "Created 350 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -251,7 +295,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "500 Club",
 			image: "post_500",
-			description: "Made 500 posts on the forum",
+			description: "Created 500 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -268,7 +312,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Part of the Community",
 			image: "post_1000",
-			description: "Made 1,000 posts on the forum",
+			description: "Created 1,000 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -285,7 +329,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Forum Spammer",
 			image: "post_5000",
-			description: "Made 5,000 posts on the forum",
+			description: "Created 5,000 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -302,7 +346,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Over 9000",
 			image: "post_9001",
-			description: "Made over 9,000 posts",
+			description: "Created over 9,000 posts",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -335,7 +379,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "First Topic",
 			image: "topic_1",
-			description: "Created 1 topic on the forum",
+			description: "Created 1 topic",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -355,7 +399,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "5 Topics",
 			image: "topic_5",
-			description: "Created 5 topics on the forum",
+			description: "Created 5 topics",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -375,7 +419,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "15 Topics",
 			image: "topic_15",
-			description: "Created 15 topics on the forum",
+			description: "Created 15 topics",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -395,7 +439,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "30 Topics",
 			image: "topic_30",
-			description: "Created 30 topics on the forum",
+			description: "Created 30 topics",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -415,7 +459,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Conversation Starter",
 			image: "topic_50",
-			description: "Created 50 topics on the forum",
+			description: "Created 50 topics",
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
@@ -435,7 +479,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Christmas Eve",
 			image: "24th",
-			description: "Was on the forum on Christmas Eve",
+			description: "Was here on Christmas Eve",
 			disabled: false,
 			callback: function(trophy){
 				var now = new Date(proboards.dataHash.serverDate);
@@ -453,7 +497,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Christmas Day",
 			image: "25th",
-			description: "Was on the forum on Christmas Day",
+			description: "Was here on Christmas Day",
 			disabled: false,
 			callback: function(trophy){
 				var now = new Date(proboards.dataHash.serverDate);
@@ -471,21 +515,23 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "A Quick 5 Minutes",
 			image: "time_5mins",
-			description: "Been on the forum for at least 5 minutes",
+			description: "Been here for at least 5 minutes",
 			disabled: false,
+			interval: 10000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
-				var pack_data = user_data.get.pack_data(trophy.pack);
+
+				if(user_data.trophy.earned(trophy)){
+					trophies.utils.clear_interval(trophy);
+					return;
+				}
+
 				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var start_time = (pack_data.st)? pack_data.st : local_pack_data.st;
+				var tracked_time = local_pack_data.tt || 0;
+				var mins = Math.floor(tracked_time / 60);
 
-				if(start_time){
-					var diff = (yootil.timestamp() - start_time);
-					var mins = Math.floor(diff / 6000);
-
-					if(mins >= 5){
-						this.show_notification(trophy);
-					}
+				if(mins >= 1){
+					this.show_notification(trophy);
 				}
 			}
 
@@ -497,21 +543,23 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "30 Minutes",
 			image: "time_30mins",
-			description: "Been on the forum for at least 30 minutes",
+			description: "Been here for at least 30 minutes",
 			disabled: false,
+			interval: 10000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
-				var pack_data = user_data.get.pack_data(trophy.pack);
+
+				if(user_data.trophy.earned(trophy)){
+					trophies.utils.clear_interval(trophy);
+					return;
+				}
+
 				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var start_time = (pack_data.st)? pack_data.st : local_pack_data.st;
+				var tracked_time = local_pack_data.tt || 0;
+				var mins = Math.floor(tracked_time / 60);
 
-				if(start_time){
-					var diff = (yootil.timestamp() - start_time);
-					var mins = Math.floor(diff / 6000);
-
-					if(mins >= 30){
-						this.show_notification(trophy);
-					}
+				if(mins >= 30){
+					this.show_notification(trophy);
 				}
 			}
 
@@ -523,21 +571,23 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "60 Minutes",
 			image: "time_1hr",
-			description: "Been on the forum for at least 1 hour",
+			description: "Been here for at least 1 hour",
 			disabled: false,
+			interval: 10000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
-				var pack_data = user_data.get.pack_data(trophy.pack);
+
+				if(user_data.trophy.earned(trophy)){
+					trophies.utils.clear_interval(trophy);
+					return;
+				}
+
 				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var start_time = (pack_data.st)? pack_data.st : local_pack_data.st;
+				var tracked_time = local_pack_data.tt || 0;
+				var hours = Math.floor(tracked_time / 60 / 60);
 
-				if(start_time){
-					var diff = (yootil.timestamp() - start_time) / 1000;
-					var hrs = Math.floor(diff / 3600);
-
-					if(hrs >= 1){
-						this.show_notification(trophy);
-					}
+				if(hours >= 1){
+					this.show_notification(trophy);
 				}
 			}
 
@@ -549,21 +599,23 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "AFK",
 			image: "time_12hrs",
-			description: "Been on the forum for at least 12 hours",
+			description: "Been here for at least 12 hours",
 			disabled: false,
+			interval: 10000,
 			callback: function(trophy){
 				var user_data = trophies.data(yootil.user.id());
-				var pack_data = user_data.get.pack_data(trophy.pack);
+
+				if(user_data.trophy.earned(trophy)){
+					trophies.utils.clear_interval(trophy);
+					return;
+				}
+
 				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var start_time = (pack_data.st)? pack_data.st : local_pack_data.st;
+				var tracked_time = local_pack_data.tt || 0;
+				var hours = Math.floor(tracked_time / 60 / 60);
 
-				if(start_time){
-					var diff = (yootil.timestamp() - start_time) / 1000;
-					var hrs = Math.floor(diff / 3600);
-
-					if(hrs >= 12){
-						this.show_notification(trophy);
-					}
+				if(hours >= 12){
+					this.show_notification(trophy);
 				}
 			}
 

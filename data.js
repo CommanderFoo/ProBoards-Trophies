@@ -183,14 +183,18 @@ trophies.Data = (function(){
 		/**
 		 * Saves just local data for all packs or specific pack.
 		 *
-		 * @param {String} pack Can save a specific pack if needed.
+		 * @param {String} pack_id Can save a specific pack if needed.
 		 */
 
-		this.save_local = function(pack){
-			if(pack){
-				var pack_info = trophies.utils.get.pack(pack.plugin_id);
+		this.save_local = function(pack_id, local_data_to_save){
+			if(pack_id){
+				var pack_info = trophies.utils.get.pack(pack_id);
 
 				if(pack_info && pack_info.plugin_key){
+					if(local_data_to_save){
+						self.set.local_pack_data(pack_info.pack, local_data_to_save);
+					}
+
 					yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
 				}
 			} else {

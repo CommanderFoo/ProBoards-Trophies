@@ -38,7 +38,7 @@ $.extend(trophies, {
 
 				if(this.settings.show_trophies_on_profile){
 					var quick_list_html = this.build_quick_trophy_list();
-					var trophy_quick_list = yootil.create.profile_content_box();
+					var trophy_quick_list = yootil.create.profile_content_box().addClass("trophies-quick-list");
 
 					if(quick_list_html.length){
 						quick_list = trophy_quick_list;

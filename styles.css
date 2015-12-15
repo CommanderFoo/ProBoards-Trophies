@@ -387,3 +387,9 @@ div.trophy-theme-ps4.trophy-notification-pos-top-right div.trophy-notification-t
 }
 
 /* PS4 Theme End */
+
+div.trophies-quick-list img {
+
+	margin-right: 5px;
+
+}

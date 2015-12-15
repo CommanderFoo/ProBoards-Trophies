@@ -199,6 +199,19 @@ trophies.utils = {
 
 	},
 
+	/**
+	 * Clears any intervals and deletes the record.
+	 *
+	 * @param {Object} trophy
+	 */
+
+	clear_interval: function(trophy){
+		if(trophies.intervals[trophy.pack] && trophies.intervals[trophy.pack][trophy.id]){
+			clearInterval(trophies.intervals[trophy.pack][trophy.id]);
+			delete trophies.intervals[trophy.pack][trophy.id];
+		}
+	},
+
 	// A mess to be honest, it's a bit of a pain sorting them.
 	// I've rewrote this too many times now, however I think this one
 	// works a little better.

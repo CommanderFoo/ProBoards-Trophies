@@ -167,6 +167,8 @@ $.extend(trophies, {
 
 	submit_fired: false,
 
+	intervals: {},
+
 	/**
 	 * In here we do a few things like setup, generate XP levels, and also the ready event is called here.
 	 */
@@ -515,7 +517,9 @@ $.extend(trophies, {
 
 	call_pack_inits: function(){
 		for(var k in this.inits){
-			this.inits[k].func(this.inits[k].pack, this.events);
+			var methods = (TROPHY_REGISTER[this.inits[k].pack.plugin_id].methods)? TROPHY_REGISTER[this.inits[k].pack.plugin_id].methods : null;
+
+			this.inits[k].func(this.inits[k].pack, this.events, methods);
 		}
 	},
 
@@ -524,11 +528,26 @@ $.extend(trophies, {
 	 */
 
 	init_trophy_checks: function(){
+		var self = this;
+
 		for(var pack in this.lookup){
 			for(var trophy_id in this.lookup[pack]){
 				var trophy = this.lookup[pack][trophy_id];
 	
 				if(!trophy.disabled && typeof trophy.callback != "undefined" && !this.data(yootil.user.id()).trophy.earned(trophy)){
+					if(trophy.interval){
+						if(!this.intervals[pack]){
+							this.intervals[pack] = {};
+						}
+
+						this.intervals[pack][trophy_id] = setInterval(function(t){
+
+							if(t){
+								t.callback.call(self, t);
+							}
+						}, trophy.interval, trophy);
+					}
+
 					trophy.callback.call(this, trophy);
 				}
 			}
