@@ -169,6 +169,8 @@ $.extend(trophies, {
 
 	intervals: {},
 
+	sync: {},
+
 	/**
 	 * In here we do a few things like setup, generate XP levels, and also the ready event is called here.
 	 */
@@ -212,6 +214,7 @@ $.extend(trophies, {
 			this.call_pack_inits();
 			this.init_trophy_checks();
 			this.bind_events();
+			//this.sync.init();
 		}
 
 		if(yootil.location.profile()){

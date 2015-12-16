@@ -25,6 +25,19 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 		self.pack_data = self.user_data.get.pack_data(pack.plugin_id);
 		self.local_pack_data = self.user_data.get.local_pack_data(pack.plugin_id);
 
+		// DEBUG
+
+		/*setInterval(function(){
+			console.log(trophies.data(yootil.user.id()).get.pack_trophies(pack.plugin_id));
+			console.log(trophies.data(yootil.user.id()).get.pack_data(pack.plugin_id));
+			console.log(trophies.data(yootil.user.id()).get.local_pack_trophies(pack.plugin_id));
+			console.log(trophies.data(yootil.user.id()).get.local_pack_data(pack.plugin_id));
+		}, 11000);*/
+
+		// Capture focus and blur events to stop timers
+
+		self.capture_window_events();
+
 		// Capture read topics
 
 		self.capture_topics_read();
@@ -48,6 +61,9 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 	methods: {
 
+		time_tracker_interval: null,
+		tabbed: false,
+
 		capture_topics_read: function(){
 
 			// Check location; if reading a topic, increment counter
@@ -64,6 +80,9 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				var self = this;
 
 				setTimeout(function(){
+					if(self.tabbed){
+						return;
+					}
 
 					// Need to get latest pack data, as this can be updated outside
 					// at different times.
@@ -96,7 +115,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 			var self = this;
 
-			setInterval(function(){
+			this.time_tracker_interval = setInterval(function(){
 
 				// Need to get latest pack data, as this can be updated outside
 				// at different times.
@@ -111,7 +130,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 				local_pack_data.tt = tracked_time + 10;
 
-				self.user_data.save_local(self.pack.plugin_id, local_pack_data);
+				self.user_data.save_local(self.pack.plugin_id, local_pack_data, true);
 			}, 10000); // Increase time tracked every 10 seconds
 
 		},
@@ -149,6 +168,19 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				}
 
 				self.user_data.set.pack_data(self.pack.plugin_id, pack_data);
+			});
+		},
+
+		capture_window_events: function(){
+			var self = this;
+
+			$([window, document]).blur(function(){
+				clearInterval(self.time_tracker_interval);
+				self.time_tracker_interval = null;
+			}).focus(function(){
+				if(!self.time_tracker_interval){
+					self.track_time();
+				}
 			});
 		}
 

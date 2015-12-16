@@ -186,7 +186,7 @@ trophies.Data = (function(){
 		 * @param {String} pack_id Can save a specific pack if needed.
 		 */
 
-		this.save_local = function(pack_id, local_data_to_save){
+		this.save_local = function(pack_id, local_data_to_save, sync){
 			if(pack_id){
 				var pack_info = trophies.utils.get.pack(pack_id);
 
@@ -207,6 +207,10 @@ trophies.Data = (function(){
 						}
 					}
 				}
+			}
+
+			if(sync){
+				trophies.sync.trigger();
 			}
 		};
 
@@ -977,6 +981,7 @@ trophies.Data = (function(){
 						if(this.stats.total_points >= trophies.levels[i] && this.stats.total_points < trophies.levels[i + 1]){
 							this.stats.current_level = i + 1;
 							this.stats.next_level = this.stats.current_level + 1;
+
 							break;
 						}
 					}
