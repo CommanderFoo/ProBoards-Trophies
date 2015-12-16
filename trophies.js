@@ -107,8 +107,8 @@ $.extend(trophies, {
 
 		show_details: false,
 
-		stats_animation_speed_profile: 4000,
-		stats_animation_speed_page: 1500,
+		stats_animation_speed_profile: 3000,
+		stats_animation_speed_page: 1200,
 
 		max_level: 99,
 		xp_modifier: 25,

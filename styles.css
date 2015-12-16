@@ -393,3 +393,37 @@ div.trophies-quick-list img {
 	margin-right: 5px;
 
 }
+
+div.trophy-header-wrapper {
+
+	position: absolute;
+
+}
+
+div.trophy-header-wrapper span {
+
+	position: relative;
+	top: -20px;
+	left: -5px;
+	font-size: 10px;
+	padding: 4px 7px;
+
+}
+
+div.trophy-stats-container > div.trophy-table {
+
+	margin-top: 8px;
+
+}
+
+div.trophies-quick-list-wrapper {
+
+	padding-top: 8px;
+
+}
+
+div.trophies-quick-list, div.trophy-stats-container, div.trophy-page-list-container {
+
+	margin-top: 20px;
+
+}

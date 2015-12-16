@@ -6,10 +6,14 @@ $.extend(trophies, {
 
 	create_tab: function(){
 		var active = (location.href.match(/\/user\/\d+\/trophies/i))? true : false;
-		var first_box = $("form.form_user_status .content-box:first");
+		var center_column = $("form.form_user_status td#center-column");
 		var custom = $("#trophies-custom-profile");
 
-		if(first_box.length || custom.length == 1){
+		center_column = (active)? $("form.form_user_status") : center_column;
+
+		var main_container = (custom.length == 1)? custom : center_column;
+
+		if(main_container.length){
 
 			// We might be looking at a members profile, so try and get the
 			// member id first.
@@ -21,72 +25,43 @@ $.extend(trophies, {
 
 			this.data(the_user).calculate_stats();
 
-			var trophy_stats = yootil.create.profile_content_box();
-			var stats_html = (this.settings.show_stats_on_profile || active)? this.create_trophy_stats() : "";
+			if(this.settings.show_stats_on_profile || active){
+				if(active){
+					var trophy_list_html = this.build_trophy_list();
 
-			if(stats_html.length){
-				trophy_stats.html(stats_html);
-			}
+					if(trophy_list_html){
+						var trophy_list_container = yootil.create.profile_content_box().addClass("trophy-page-list-container");
 
-			// If not active, then we are on the profile
-			// summary and not the actual full trophy page.
+						if(this.packs.length > 1){
+							if(this.settings.show_pack_tabs){
+								trophy_list_container.addClass("trophies-content-box-list");
+								this.create_pack_tabs();
+							}
+						}
 
-			if(!active){
-				var quick_list = null;
-
-				// Check if we need to show the quick list of trophies
-
-				if(this.settings.show_trophies_on_profile){
+						trophy_list_container.html(trophy_list_html);
+						main_container.prepend(trophy_list_container);
+					}
+				} else if(this.settings.show_trophies_on_profile){
 					var quick_list_html = this.build_quick_trophy_list();
-					var trophy_quick_list = yootil.create.profile_content_box().addClass("trophies-quick-list");
 
 					if(quick_list_html.length){
-						quick_list = trophy_quick_list;
-						trophy_quick_list.html(quick_list_html);
+						var quick_list_container = yootil.create.profile_content_box().addClass("trophies-quick-list");
 
-					//	if(yootil.user.id() == yootil.page.member.id()){
-					//		trophy_quick_list.insertAfter(first_box);
-					//	} else {
-							if(custom.length){
-								custom.append(trophy_quick_list);
-							} else {
-								trophy_quick_list.insertBefore(first_box);
-							}
-					//	}
+						quick_list_container.html(quick_list_html);
+						main_container.prepend(quick_list_container);
 					}
 				}
 
-				if(stats_html){
-					if(quick_list){
-						trophy_stats.insertBefore(quick_list);
-					//} else if(yootil.user.id() == yootil.page.member.id()){
-						//trophy_stats.insertAfter(first_box);
-					} else {
-						if(custom.length){
-							custom.append(trophy_quick_list);
-						} else {
-							trophy_stats.insertBefore(first_box);
-						}
-					}
+				var stats_html = this.create_trophy_stats();
+
+				if(stats_html.length){
+					var trophy_stats_container = yootil.create.profile_content_box().addClass("trophy-stats-container");
+
+					trophy_stats_container.html(stats_html);
+					main_container.prepend(trophy_stats_container);
+					this.setup_animations(the_user, active);
 				}
-			} else {
-				trophy_stats.appendTo($("form.form_user_status").parent());
-
-				var trophy_list = yootil.create.profile_content_box();
-
-				if(this.packs.length > 1){
-					if(this.settings.show_pack_tabs){
-						this.create_pack_tabs();
-					}
-
-					trophy_list.addClass("trophies-content-box-list")
-				}
-
-				trophy_list.html(this.build_trophy_list()).appendTo($("form.form_user_status").parent());
-			}
-
-			if(stats_html){
-				this.setup_animations(the_user, active);
 			}
 
 			yootil.create.profile_tab("Trophies", "trophies", active);
@@ -285,6 +260,8 @@ $.extend(trophies, {
 			trophy_list = "<div class='trophies-list-profile trophies-list-none'>" + yootil.html_encode(to_user, true) + " not earned any trophies.</div>";
 		}
 
+		trophy_list = "<div class='trophy-header-wrapper'><span class='content-box'>Trophy List</span></div>" + trophy_list;
+
 		return trophy_list;
 	},
 
@@ -337,6 +314,8 @@ $.extend(trophies, {
 	create_trophy_stats: function(){
 		var data = this.data(yootil.page.member.id() || yootil.user.id());
 		var html = "";
+
+		html += "<div class='trophy-header-wrapper'><span class='content-box'>Trophy Stats</span></div>";
 
 		html += "<div class='trophy-table'>";
 			html += "<div class='trophy-row'>";
@@ -419,6 +398,10 @@ $.extend(trophies, {
 				html += "<img class='trophies-tiptip' title='" + title + "' data-pack='" + list[trophy].pack + "' src='" + trophy_img + "' />";
 				has_trophies = true;
 			}
+		}
+
+		if(html.length){
+			html = "<div class='trophy-header-wrapper'><span class='content-box'>Trophies Earned</span></div><div class='trophies-quick-list-wrapper'>" + html + "</div>";
 		}
 
 		return html;
