@@ -849,7 +849,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "Say Hello To My Little Friend",
 			image: "friend_1",
-			description: "Folowed 1 member",
+			description: "Followed 1 member",
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
@@ -872,7 +872,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "bronze",
 			title: "Party For 5",
 			image: "friend_5",
-			description: "Folowed 5 members",
+			description: "Followed 5 members",
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
@@ -895,7 +895,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "How Many Friends Do You need?",
 			image: "friend_15",
-			description: "Folowed 15 members",
+			description: "Followed 15 members",
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
@@ -918,7 +918,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "silver",
 			title: "Path To Stalking",
 			image: "friend_30",
-			description: "Folowed 30 members",
+			description: "Followed 30 members",
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
@@ -941,7 +941,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			cup: "gold",
 			title: "Stalker",
 			image: "friend_50",
-			description: "Folowed 50 members",
+			description: "Followed 50 members",
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
