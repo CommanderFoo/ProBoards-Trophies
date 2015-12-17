@@ -221,6 +221,10 @@ $.extend(trophies, {
 
 		data.add.trophy(trophy, true, true);
 
+		// Sync to other tabs
+
+		this.sync.trigger();
+
 		// Create the notification (appended to the DOM).
 
 		this.create_notification(trophy);
@@ -235,6 +239,11 @@ $.extend(trophies, {
 				// Set the trophy as seen once the notification has shown up.
 
 				data.set.trophy.seen(trophy);
+
+				// Sync again, as data has changed.
+
+				self.sync.trigger();
+
 			}).delay(self.settings.notification_duration).fadeOut("normal", function(){
 				$(this).remove();
 				self.queue.next();

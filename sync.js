@@ -47,15 +47,14 @@ $.extend(trophies.sync, {
 
 		if(pack_info){
 			if(local){
-				trophies.data(yootil.user.id()).set.local_pack_data(id, new_data);
+				trophies.data(yootil.user.id()).set.local_pack(id, new_data);
 			} else {
-				trophies.data(yootil.user.id()).set.pack_data(id, new_data);
+				trophies.data(yootil.user.id()).set.pack(id, new_data);
 			}
 		}
 	},
 
 	trigger: function(val){
-		return;
 		this.trigger_caller = (typeof val == "undefined" || val)? true : false;
 
 		if(trophies.packs.length){

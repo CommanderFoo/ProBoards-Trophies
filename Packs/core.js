@@ -25,33 +25,13 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 		self.pack_data = self.user_data.get.pack_data(pack.plugin_id);
 		self.local_pack_data = self.user_data.get.local_pack_data(pack.plugin_id);
 
-		// DEBUG
+		// Only want to run timers if user is on an active tab
 
-		/*setInterval(function(){
-			console.log(trophies.data(yootil.user.id()).get.pack_trophies(pack.plugin_id));
-			console.log(trophies.data(yootil.user.id()).get.pack_data(pack.plugin_id));
-			console.log(trophies.data(yootil.user.id()).get.local_pack_trophies(pack.plugin_id));
-			console.log(trophies.data(yootil.user.id()).get.local_pack_data(pack.plugin_id));
-		}, 11000);*/
+		self.capture_tab_visibility();
 
-		// Capture focus and blur events to stop timers
+		// Bind click to the follow button to capture follows
 
-		self.capture_window_events();
-
-		// Capture read topics
-
-		self.capture_topics_read();
-
-		// Need to capture logged in time
-
-		self.track_time();
-
-		// Perform intervals
-
-		// Both topics and time methods above need to update
-		// local data, so do that here for both.
-
-		self.user_data.save_local(pack);
+		self.bind_follows();
 
 		// Perform some stuff before keys are synced
 
@@ -62,7 +42,9 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 	methods: {
 
 		time_tracker_interval: null,
-		tabbed: false,
+		topic_tracker_timer: null,
+		topic_tracker_incremented: false,
+		followed: false,
 
 		capture_topics_read: function(){
 
@@ -71,16 +53,12 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 			if(yootil.location.thread()){
 
-				// Wait a little while to prevent people getting
-				// this trophy too quickly.
-
-				// We will do sync checking at some point so that
-				// a user can't just open 50 topics all in one go.
+				// Timer is cleared if it is open in other tabs
 
 				var self = this;
 
-				setTimeout(function(){
-					if(self.tabbed){
+				this.tropic_tracker_timer = setTimeout(function(){
+					if(self.topic_tracker_incremented){
 						return;
 					}
 
@@ -97,8 +75,15 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 
 					local_pack_data.tr = read + 1;
 
-					self.user_data.save_local(self.pack.plugin_id, local_pack_data);
-				}, 5000) // 5 seconds, then it will increment the counter
+					// We have tracked a topic in this tab, so mark it
+
+					self.topic_tracker_incremented = true;
+
+					// Finally save, sync, and trigger
+
+					self.user_data.save_local(self.pack.plugin_id, local_pack_data, true);
+					$(trophies.events).trigger("trophies.topic_read");
+				}, 2000) // 2 seconds, then it will increment the counter
 			}
 		},
 
@@ -167,21 +152,83 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 					local_pack_data.tr = 0;
 				}
 
+				// Handle topics read
+
+				if(local_pack_data.mf){
+					pack_data.mf = local_pack_data.mf;
+					local_pack_data.mf = 0;
+				}
+
 				self.user_data.set.pack_data(self.pack.plugin_id, pack_data);
 			});
 		},
 
-		capture_window_events: function(){
+		// Could have used the visibility API but it didn't
+		// work too well on tabs opened in the background.
+
+		capture_tab_visibility: function(){
 			var self = this;
 
 			$([window, document]).blur(function(){
+
+				// Time tracker
+
 				clearInterval(self.time_tracker_interval);
 				self.time_tracker_interval = null;
+
+				// Topics created tracker
+
+				clearTimeout(self.topic_tracker_timer);
+				self.topic_tracker_timer = null;
 			}).focus(function(){
+
+				// Time tracker
+
 				if(!self.time_tracker_interval){
 					self.track_time();
 				}
+
+				// Topic tracker
+
+				if(!self.topic_tracker_timer && !self.topic_tracker_incremented){
+					self.capture_topics_read();
+				}
 			});
+		},
+
+		/**
+		 * Monitors the "Follow" button on profiles.
+		 */
+
+		bind_follows: function(){
+			if(yootil.location.profile()){
+				var self = this;
+				var button = $(".button.follow_button");
+
+				if(button.length == 1){
+					button.on("click", function(){
+						if($(this).text() == "Follow" && !self.followed){
+							self.followed = true;
+
+							var pack_data = self.user_data.get.pack_data(self.pack.plugin_id);
+							var local_pack_data = self.user_data.get.local_pack_data(self.pack.plugin_id);
+							var follows = (~~ (pack_data.mf))? pack_data.mf : 0;
+
+							if(~~ local_pack_data.mf){
+								follows = local_pack_data.mf;
+							}
+
+							local_pack_data.mf = follows + 1;
+
+							self.user_data.save_local(self.pack.plugin_id, local_pack_data, true);
+
+							// Trigger event so trophy pops
+
+							$(trophies.events).trigger("trophies.followed");
+						}
+					})
+				}
+			}
 		}
 
 	},
@@ -455,7 +502,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
-				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var data = this.data(yootil.user.id()).get.pack_data(trophy.pack);
 				var current_topics = data.tp || 0;
 
 				if(current_topics >= 15){
@@ -475,7 +522,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
-				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var data = this.data(yootil.user.id()).get.pack_data(trophy.pack);
 				var current_topics = data.tp || 0;
 
 				if(current_topics >= 30){
@@ -495,7 +542,7 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			sort_on: "description",
 			disabled: false,
 			callback: function(trophy){
-				var data = trophies.data(yootil.user.id()).get.pack_data(trophy.pack);
+				var data = this.data(yootil.user.id()).get.pack_data(trophy.pack);
 				var current_topics = data.tp || 0;
 
 				if(current_topics >= 50){
@@ -551,10 +598,10 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			disabled: false,
 			interval: 15000,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
+				var user_data = this.data(yootil.user.id());
 
 				if(user_data.trophy.earned(trophy)){
-					trophies.utils.clear_interval(trophy);
+					this.utils.clear_interval(trophy);
 					return;
 				}
 
@@ -579,10 +626,10 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			disabled: false,
 			interval: 15000,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
+				var user_data = this.data(yootil.user.id());
 
 				if(user_data.trophy.earned(trophy)){
-					trophies.utils.clear_interval(trophy);
+					this.utils.clear_interval(trophy);
 					return;
 				}
 
@@ -607,10 +654,10 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			disabled: false,
 			interval: 15000,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
+				var user_data = this.data(yootil.user.id());
 
 				if(user_data.trophy.earned(trophy)){
-					trophies.utils.clear_interval(trophy);
+					this.utils.clear_interval(trophy);
 					return;
 				}
 
@@ -635,10 +682,10 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			disabled: false,
 			interval: 15000,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
+				var user_data = this.data(yootil.user.id());
 
 				if(user_data.trophy.earned(trophy)){
-					trophies.utils.clear_interval(trophy);
+					this.utils.clear_interval(trophy);
 					return;
 				}
 
@@ -663,13 +710,15 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			disabled: false,
 			sort_on: "description",
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
-				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var topics_read = local_pack_data.tr || 0;
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
 
-				if(topics_read >= 1){
-					this.show_notification(trophy);
-				}
+					if(topics_read >= 1){
+						this.show_notification(evt.data);
+					}
+				}, this));
 			}
 
 		},
@@ -683,14 +732,17 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			description: "Has read 5 topics",
 			disabled: false,
 			sort_on: "description",
+			timer: 2100,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
-				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var topics_read = local_pack_data.tr || 0;
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
 
-				if(topics_read >= 5){
-					this.show_notification(trophy);
-				}
+					if(topics_read >= 5){
+						this.show_notification(evt.data);
+					}
+				}, this));
 			}
 
 		},
@@ -704,14 +756,17 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			description: "Has read 25 topics",
 			disabled: false,
 			sort_on: "description",
+			timer: 2100,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
-				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var topics_read = local_pack_data.tr || 0;
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
 
-				if(topics_read >= 25){
-					this.show_notification(trophy);
-				}
+					if(topics_read >= 25){
+						this.show_notification(evt.data);
+					}
+				}, this));
 			}
 
 		},
@@ -725,14 +780,17 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			description: "Has read 50 topics",
 			disabled: false,
 			sort_on: "description",
+			timer: 2100,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
-				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var topics_read = local_pack_data.tr || 0;
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
 
-				if(topics_read >= 50){
-					this.show_notification(trophy);
-				}
+					if(topics_read >= 50){
+						this.show_notification(evt.data);
+					}
+				}, this));
 			}
 
 		},
@@ -746,14 +804,156 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 			description: "Has read 100 topics",
 			disabled: false,
 			sort_on: "description",
+			timer: 2100,
 			callback: function(trophy){
-				var user_data = trophies.data(yootil.user.id());
-				var local_pack_data = user_data.get.local_pack_data(trophy.pack);
-				var topics_read = local_pack_data.tr || 0;
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
 
-				if(topics_read >= 100){
-					this.show_notification(trophy);
-				}
+					if(topics_read >= 100){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 30,
+			cup: "gold",
+			title: "Reader Extraordinaire",
+			image: "read_200",
+			description: "Has read 200 topics",
+			disabled: false,
+			sort_on: "description",
+			timer: 2100,
+			callback: function(trophy){
+				$(this.events).on("trophies.topic_read", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var topics_read = local_pack_data.tr || 0;
+
+					if(topics_read >= 200){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 31,
+			cup: "bronze",
+			title: "Say Hello To My Little Friend",
+			image: "friend_1",
+			description: "Folowed 1 member",
+			disabled: false,
+			sort_on: "description",
+			callback: function(trophy){
+				$(this.events).on("trophies.followed", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var total_followed = local_pack_data.mf || 0;
+
+					if(total_followed >= 1){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 32,
+			cup: "bronze",
+			title: "Party For 5",
+			image: "friend_5",
+			description: "Folowed 5 members",
+			disabled: false,
+			sort_on: "description",
+			callback: function(trophy){
+				$(this.events).on("trophies.followed", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var total_followed = local_pack_data.mf || 0;
+
+					if(total_followed >= 5){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 33,
+			cup: "silver",
+			title: "How Many Friends Do You need?",
+			image: "friend_15",
+			description: "Folowed 15 members",
+			disabled: false,
+			sort_on: "description",
+			callback: function(trophy){
+				$(this.events).on("trophies.followed", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var total_followed = local_pack_data.mf || 0;
+
+					if(total_followed >= 15){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 34,
+			cup: "silver",
+			title: "Path To Stalking",
+			image: "friend_30",
+			description: "Folowed 30 members",
+			disabled: false,
+			sort_on: "description",
+			callback: function(trophy){
+				$(this.events).on("trophies.followed", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var total_followed = local_pack_data.mf || 0;
+
+					if(total_followed >= 30){
+						this.show_notification(evt.data);
+					}
+				}, this));
+			}
+
+		},
+
+		{
+
+			id: 35,
+			cup: "gold",
+			title: "Stalker",
+			image: "friend_50",
+			description: "Folowed 50 members",
+			disabled: false,
+			sort_on: "description",
+			callback: function(trophy){
+				$(this.events).on("trophies.followed", trophy, $.proxy(function(evt){
+					var user_data = this.data(yootil.user.id());
+					var local_pack_data = user_data.get.local_pack_data(evt.data.pack);
+					var total_followed = local_pack_data.mf || 0;
+
+					if(total_followed >= 50){
+						this.show_notification(evt.data);
+					}
+				}, this));
 			}
 
 		}

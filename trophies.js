@@ -214,7 +214,7 @@ $.extend(trophies, {
 			this.call_pack_inits();
 			this.init_trophy_checks();
 			this.bind_events();
-			//this.sync.init();
+			this.sync.init();
 		}
 
 		if(yootil.location.profile()){
@@ -544,14 +544,19 @@ $.extend(trophies, {
 						}
 
 						this.intervals[pack][trophy_id] = setInterval(function(t){
-
 							if(t){
 								t.callback.call(self, t);
 							}
 						}, trophy.interval, trophy);
+					} else if(trophy.timer){
+						setTimeout(function(t){
+							if(t){
+								t.callback.call(self, t);
+							}
+						}, trophy.timer, trophy)
+					} else {
+						trophy.callback.call(this, trophy);
 					}
-
-					trophy.callback.call(this, trophy);
 				}
 			}
 		}

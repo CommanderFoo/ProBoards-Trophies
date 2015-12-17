@@ -793,7 +793,7 @@ trophies.Data = (function(){
 			 * @param {Object} callbacks
 			 */
 
-			everything: function(skip_key_update, callbacks){
+			everything: function(skip_key_update, callbacks, sync){
 				for(var pack in trophies.packs){
 					var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
 
@@ -810,6 +810,10 @@ trophies.Data = (function(){
 							}
 						}
 					}
+				}
+
+				if(sync){
+					trophies.sync.trigger();
 				}
 			}
 

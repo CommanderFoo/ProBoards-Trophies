@@ -30,17 +30,24 @@ $.extend(trophies, {
 					var trophy_list_html = this.build_trophy_list();
 
 					if(trophy_list_html){
-						var trophy_list_container = yootil.create.profile_content_box().addClass("trophy-page-list-container");
+						var trophy_list_container = yootil.create.profile_content_box().attr("id", "trophies-list");
+
+						trophy_list_container.html(trophy_list_html);
+						main_container.prepend(trophy_list_container);
+
+						var add_klass = true;
 
 						if(this.packs.length > 1){
 							if(this.settings.show_pack_tabs){
 								trophy_list_container.addClass("trophies-content-box-list");
 								this.create_pack_tabs();
+								add_klass = false;
 							}
 						}
 
-						trophy_list_container.html(trophy_list_html);
-						main_container.prepend(trophy_list_container);
+						if(add_klass){
+							trophy_list_container.addClass("trophy-page-list-container");
+						}
 					}
 				} else if(this.settings.show_trophies_on_profile){
 					var quick_list_html = this.build_quick_trophy_list();
@@ -139,7 +146,7 @@ $.extend(trophies, {
 			return false;
 		});
 
-		tabs_html.appendTo($("form.form_user_status").parent());
+		tabs_html.insertBefore("#trophies-list");
 	},
 
 	/**
