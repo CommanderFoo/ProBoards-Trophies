@@ -229,6 +229,11 @@ $.extend(trophies, {
 
 		this.create_notification(trophy);
 
+		// Custom event for any packs that want to modify the notification
+		// after it has been created.
+
+		$(this.events).trigger("trophies.notification_created", [$("#trophy-" + trophy.id), trophy]);
+
 		var self = this;
 
 		// Queue it, in case there are multiple trophies earned.
@@ -246,6 +251,7 @@ $.extend(trophies, {
 
 			}).delay(self.settings.notification_duration).fadeOut("normal", function(){
 				$(this).remove();
+				$(self.events).trigger("trophies.notification_removed", [trophy]);
 				self.queue.next();
 			});
 		});

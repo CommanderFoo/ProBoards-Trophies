@@ -124,7 +124,7 @@ trophies.Data = (function(){
 							// Now update local storage
 
 							if(pack_info.plugin_key){
-								yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+								yootil.storage.set(pack_info.plugin_key + "_" + this.user_id, self.get.local_pack(pack_info.pack), true, true);
 							}
 						}
 
@@ -195,7 +195,7 @@ trophies.Data = (function(){
 						self.set.local_pack_data(pack_info.pack, local_data_to_save);
 					}
 
-					yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+					yootil.storage.set(pack_info.plugin_key + "_" + self.user_id, self.get.local_pack(pack_info.pack), true, true);
 				}
 			} else {
 				if(trophies.packs.length){
@@ -203,7 +203,7 @@ trophies.Data = (function(){
 						var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
 
 						if(pack_info && pack_info.plugin_key){
-							yootil.storage.set(pack_info.plugin_key, self.get.local_pack(pack_info.pack), true, true);
+							yootil.storage.set(pack_info.plugin_key + "_" + self.user_id, self.get.local_pack(pack_info.pack), true, true);
 						}
 					}
 				}
@@ -270,7 +270,7 @@ trophies.Data = (function(){
 								};
 
 								if(pack_info.plugin_key){
-									yootil.storage.set(pack_info.plugin_key, self.trophy_local_data[pack_info.pack], true, true);
+									yootil.storage.set(pack_info.plugin_key + "_" + self.user_id, self.trophy_local_data[pack_info.pack], true, true);
 								}
 							}
 						}
@@ -749,7 +749,7 @@ trophies.Data = (function(){
 						}
 
 						if(pack_info.plugin_key){
-							yootil.storage.set(pack_info.plugin_key, self.trophy_local_data[trophy.pack], true, true);
+							yootil.storage.set(pack_info.plugin_key + "_" + self.user_id, self.trophy_local_data[trophy.pack], true, true);
 						}
 					}
 				}
@@ -799,7 +799,7 @@ trophies.Data = (function(){
 
 					if(pack_info){
 						if(pack_info.plugin_key){
-							yootil.storage.remove(pack_info.plugin_key);
+							yootil.storage.remove(pack_info.plugin_key + "_" + self.user_id);
 
 							self.trophy_data = {};
 							self.trophy_local_data = {};

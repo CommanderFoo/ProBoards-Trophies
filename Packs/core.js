@@ -114,7 +114,6 @@ TROPHY_REGISTER["pixeldepth_trophies"] = {
 				}
 
 				local_pack_data.tt = tracked_time + 10;
-
 				self.user_data.save_local(self.pack.plugin_id, local_pack_data, true);
 			}, 10000); // Increase time tracked every 10 seconds
 

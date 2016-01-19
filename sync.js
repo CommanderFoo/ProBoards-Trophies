@@ -41,8 +41,8 @@ $.extend(trophies.sync, {
 			return;
 		}
 
-		var local = (evt.key.match("_local_sync"))? true : false;
-		var id = evt.key.replace(/_(data|local)_sync/, "");
+		var local = (evt.key.match(/_\d+_local_sync/))? true : false;
+		var id = evt.key.replace(/_\d+_(data|local)_sync/, "");
 		var pack_info = trophies.utils.get.pack(id);
 
 		if(pack_info){
@@ -62,9 +62,16 @@ $.extend(trophies.sync, {
 				var pack_info = trophies.utils.get.pack(trophies.packs[pack]);
 
 				if(pack_info && pack_info.plugin_key){
-					yootil.storage.set(pack_info.plugin_key + "_data_sync", trophies.data(yootil.user.id()).get.pack(pack_info.pack), true, true);
-					yootil.storage.set(pack_info.plugin_key + "_local_sync", trophies.data(yootil.user.id()).get.local_pack(pack_info.pack), true, true);
+					yootil.storage.set(pack_info.plugin_key + "_" + yootil.user.id() + "_data_sync", trophies.data(yootil.user.id()).get.pack(pack_info.pack), true, true);
+					yootil.storage.set(pack_info.plugin_key + "_" + yootil.user.id() + "_local_sync", trophies.data(yootil.user.id()).get.local_pack(pack_info.pack), true, true);
 
+					if(yootil.storage.get(pack_info.plugin_key + "_data_sync", false, true)){
+						yootil.storage.remove(pack_info.plugin_key + "_data_sync", true);
+					}
+
+					if(yootil.storage.get(pack_info.plugin_key + "_local_sync", false, true)){
+						yootil.storage.remove(pack_info.plugin_key + "_local_sync", true);
+					}
 				}
 			}
 		}

@@ -162,6 +162,12 @@ $.extend(trophies, {
 	inits: [],
 
 	/**
+	 * @property {Array} preinits An array of functions to call for the registered packs.
+	 */
+
+	pre_inits: [],
+
+	/**
 	 * @property {Boolean} submit_fired Used when submitting a form to tell if it has been submitted or not.
 	 */
 
@@ -205,9 +211,10 @@ $.extend(trophies, {
 	 * the DOM is ready.
 	 */
 
-	ready: function(){
+	ready: function(){;
 		this.register_trophy_packs();
 		this.setup_user_data_table();
+		this.call_pack_pre_inits();
 
 		if(yootil.user.logged_in() && this.allowed_to_earn_trophies()){
 			this.show_unseen_trophies();
@@ -355,6 +362,25 @@ $.extend(trophies, {
 						});
 					}
 
+					if(typeof TROPHY_REGISTER[the_pack].pre_init != "undefined"){
+						this.pre_inits.push({
+
+							pack: {
+
+								plugin_id: TROPHY_REGISTER[the_pack].plugin_id,
+								plugin_key: TROPHY_REGISTER[the_pack].plugin_key,
+								trophies_key: TROPHY_REGISTER[the_pack].trophies_key,
+								trophies_data_key: TROPHY_REGISTER[the_pack].trophies_data_key,
+								name: TROPHY_REGISTER[the_pack].name,
+								description: TROPHY_REGISTER[the_pack].description
+
+							},
+
+							func: TROPHY_REGISTER[the_pack].pre_init
+
+						});
+					}
+
 					for(var t in TROPHY_REGISTER[the_pack].trophies){
 						var the_trophy = TROPHY_REGISTER[the_pack].trophies[t];
 
@@ -468,14 +494,32 @@ $.extend(trophies, {
 		this.user_data_table = {};
 
 		for(var pack in this.packs){
-			var pack_data = proboards.plugin.keys.data[this.packs[pack]];
-			var local_data = yootil.storage.get(this.packs[pack], true) || {};
+			var pack_info = trophies.utils.get.pack(this.packs[pack]);
 
-			for(var user in pack_data){
-				this.data(user).add.pack_data(this.packs[pack], this.utils.check_data(pack_data[user]));
+			if(pack_info && pack_info.plugin_key){
+				var pack_data = proboards.plugin.keys.data[this.packs[pack]];
+
+				// Need to move old local data that isn't account tied
+
+				this.tie_local_data(pack_info.plugin_key);
+
+				var local_data = yootil.storage.get(pack_info.plugin_key + "_" + yootil.user.id(), true) || {};
+
+				for(var user in pack_data){
+					this.data(user).add.pack_data(this.packs[pack], this.utils.check_data(pack_data[user]));
+				}
+
+				this.data(yootil.user.id()).add.pack_local_data(this.packs[pack], local_data);
 			}
+		}
+	},
 
-			this.data(yootil.user.id()).add.pack_local_data(this.packs[pack], local_data);
+	tie_local_data: function(plugin_key){
+		var data = yootil.storage.get(plugin_key, true) || null;
+
+		if(data){
+			yootil.storage.set(plugin_key + "_" + yootil.user.id(), data, true, true);
+			yootil.storage.remove(plugin_key, true);
 		}
 	},
 
@@ -512,6 +556,16 @@ $.extend(trophies, {
 		}
 
 		return user_data;
+	},
+
+	/**
+	 * Calls any "pre_init" functions registered by packs.
+	 */
+
+	call_pack_pre_inits: function(){
+		for(var k in this.pre_inits){
+			this.pre_inits[k].func(this.pre_inits[k].pack);
+		}
 	},
 
 	/**
