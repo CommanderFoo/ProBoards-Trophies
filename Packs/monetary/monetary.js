@@ -16,7 +16,6 @@ TROPHY_REGISTER["trophies_monetary_pack"] = {
 	pre_init: function(pack){
 
 		// Need to do text replacements
-		
 		//test
 
 		for(var t in trophies.lookup[pack.plugin_id]){
@@ -27,7 +26,6 @@ TROPHY_REGISTER["trophies_monetary_pack"] = {
 				var last = monetary[keys[0]];
 
 				for(var i = 1; i < keys.length; i ++){
-					console.log(keys[i]);
 					if(last[keys[i]]){
 						last = last[keys[i]];
 					}
