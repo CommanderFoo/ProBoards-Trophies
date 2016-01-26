@@ -16,7 +16,6 @@ TROPHY_REGISTER["trophies_monetary_pack"] = {
 	pre_init: function(pack){
 
 		// Need to do text replacements
-		//test
 
 		for(var t in trophies.lookup[pack.plugin_id]){
 			var trophy = trophies.lookup[pack.plugin_id][t];
